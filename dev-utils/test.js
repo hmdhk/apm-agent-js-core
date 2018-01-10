@@ -126,11 +126,25 @@ function onExit (callback) {
 function startSelenium (callback, manualStop) {
   callback = callback || function () {}
   var selenium = require('selenium-standalone')
-  selenium.install({ logger: console.log }, function (installError) {
+  var drivers = {
+    chrome: {
+      version: '2.34',
+      arch: process.arch,
+      baseURL: 'https://chromedriver.storage.googleapis.com'
+    },
+    firefox: {
+      version: '0.19.1',
+      arch: process.arch
+    }
+  }
+  selenium.install({
+    logger: console.log,
+    drivers: drivers
+  }, function (installError) {
     if (installError) {
       console.log('Error while installing selenium:', installError)
     }
-    selenium.start(function (startError, child) {
+    selenium.start({drivers: drivers}, function (startError, child) {
       if (startError) {
         console.log('Error while starting selenium:', startError)
         return process.exit(1)
