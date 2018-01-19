@@ -6,19 +6,17 @@ class PerformanceMonitoring {
     this._logginService = loggingService
     this._zoneService = zoneService
     this._transactionService = transactionService
-    this._sendIntervalId = undefined
   }
 
   init () {
     this._zoneService.initialize(window.Zone.current)
-    this.scheduleTransactionSend()
-  }
-
-  scheduleTransactionSend () {
-    var self = this
-    this._sendIntervalId = setInterval(function () {
-      self.sendTransactionInterval()
-    }, 5000)
+    var performanceMonitoring = this
+    this._transactionService.subscribe(function (tr) {
+      var payload = performanceMonitoring.createTransactionPayload(tr)
+      if (payload) {
+        performanceMonitoring._apmServer.addTransaction(payload)
+      }
+    })
   }
 
   setTransactionContextInfo (transaction) {
@@ -28,55 +26,73 @@ class PerformanceMonitoring {
     }
   }
 
-  sendTransactionInterval () {
-    var logger = this._logginService
-    var self = this
-    var trService = this._transactionService
-
-    var transactions = trService.getTransactions()
-    if (transactions.length > 0) {
-      var promise = self.sendTransactions(transactions)
-      if (promise) {
-        promise.then(undefined, function () {
-          logger.debug('Failed sending transactions!')
-        })
-      }
-      trService.clearTransactions()
-      return promise
-    }
-  }
-  sendTransactions (transactions) {
+  filterTransaction (tr) {
     var performanceMonitoring = this
     var browserResponsivenessInterval = this._configService.get('browserResponsivenessInterval')
     var checkBrowserResponsiveness = this._configService.get('checkBrowserResponsiveness')
 
-    transactions.forEach(function (transaction) {
-      transaction.spans.sort(function (spanA, spanB) {
-        return spanA._start - spanB._start
-      })
+    if (checkBrowserResponsiveness && !tr.isHardNavigation) {
+      var buffer = performanceMonitoring._configService.get('browserResponsivenessBuffer')
 
-      if (performanceMonitoring._configService.get('groupSimilarSpans')) {
-        var similarSpanThreshold = performanceMonitoring._configService.get('similarSpanThreshold')
-        transaction.spans = performanceMonitoring.groupSmallContinuouslySimilarSpans(transaction, similarSpanThreshold)
+      var duration = tr.duration()
+      var wasBrowserResponsive = performanceMonitoring.checkBrowserResponsiveness(tr, browserResponsivenessInterval, buffer)
+      if (!wasBrowserResponsive) {
+        performanceMonitoring._logginService.debug('Transaction was discarded! browser was not responsive enough during the transaction.', ' duration:', duration, ' browserResponsivenessCounter:', tr.browserResponsivenessCounter, 'interval:', browserResponsivenessInterval)
+        return false
       }
-      performanceMonitoring.setTransactionContextInfo(transaction)
+    }
+    return true
+  }
+
+  prepareTransaction (transaction) {
+    var performanceMonitoring = this
+    transaction.spans.sort(function (spanA, spanB) {
+      return spanA._start - spanB._start
     })
 
-    var filterTransactions = transactions.filter(function (tr) {
-      if (checkBrowserResponsiveness && !tr.isHardNavigation) {
-        var buffer = performanceMonitoring._configService.get('browserResponsivenessBuffer')
+    if (performanceMonitoring._configService.get('groupSimilarSpans')) {
+      var similarSpanThreshold = performanceMonitoring._configService.get('similarSpanThreshold')
+      transaction.spans = performanceMonitoring.groupSmallContinuouslySimilarSpans(transaction, similarSpanThreshold)
+    }
+    performanceMonitoring.setTransactionContextInfo(transaction)
+  }
 
-        var duration = tr.duration()
-        var wasBrowserResponsive = performanceMonitoring.checkBrowserResponsiveness(tr, browserResponsivenessInterval, buffer)
-        if (!wasBrowserResponsive) {
-          performanceMonitoring._logginService.debug('Transaction was discarded! browser was not responsive enough during the transaction.', ' duration:', duration, ' browserResponsivenessCounter:', tr.browserResponsivenessCounter, 'interval:', browserResponsivenessInterval)
-          return false
-        }
+  createTransactionDataModel (transaction) {
+    var configContext = this._configService.get('context')
+    var spans = transaction.spans.map(function (span) {
+      return {
+        name: span.signature,
+        type: span.type,
+        start: span._start,
+        duration: span.duration()
       }
-      return true
     })
 
-    var payload = this.convertTransactionsToServerModel(filterTransactions)
+    var context = utils.merge({}, configContext, transaction.contextInfo)
+    return {
+      id: transaction.id,
+      timestamp: transaction.timestamp,
+      name: transaction.name,
+      type: transaction.type,
+      duration: transaction.duration(),
+      spans: spans,
+      context: context,
+      marks: transaction.marks
+    }
+  }
+
+  createTransactionPayload (transaction) {
+    this.prepareTransaction(transaction)
+    var filtered = this.filterTransaction(transaction)
+    if (filtered) {
+      return this.createTransactionDataModel(transaction)
+    }
+  }
+
+  sendTransactions (transactions) {
+    var payload = transactions
+      .map(this.createTransactionPayload.bind(this))
+      .filter(function (tr) { return tr })
     this._logginService.debug('Sending Transactions to apm server.', transactions.length)
 
     // todo: check if transactions are already being sent
@@ -85,29 +101,7 @@ class PerformanceMonitoring {
   }
 
   convertTransactionsToServerModel (transactions) {
-    var configContext = this._configService.get('context')
-    return transactions.map(function (transaction) {
-      var spans = transaction.spans.map(function (span) {
-        return {
-          name: span.signature,
-          type: span.type,
-          start: span._start,
-          duration: span.duration()
-        }
-      })
-
-      var context = utils.merge({}, configContext, transaction.contextInfo)
-      return {
-        id: transaction.id,
-        timestamp: transaction.timestamp,
-        name: transaction.name,
-        type: transaction.type,
-        duration: transaction.duration(),
-        spans: spans,
-        context: context,
-        marks: transaction.marks
-      }
-    })
+    return transactions.map(this.createTransactionDataModel.bind(this))
   }
 
   groupSmallContinuouslySimilarSpans (transaction, threshold) {

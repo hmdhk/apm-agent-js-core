@@ -9,7 +9,6 @@ function TransactionService (zoneService, logger, config) {
   if (typeof config === 'undefined') {
     logger.debug('TransactionService: config is not provided')
   }
-  this._queue = []
   this._logger = logger
   this._zoneService = zoneService
 
@@ -18,7 +17,6 @@ function TransactionService (zoneService, logger, config) {
   this.taskMap = {}
   this.metrics = {}
 
-  this._queue = []
   this.initialPageLoadName = undefined
 
   this._subscription = new Subscription()
@@ -164,7 +162,6 @@ TransactionService.prototype.sendPageLoadMetrics = function (name) {
       var captured = self.capturePageLoadMetrics(tr)
       if (captured) {
         self.add(tr)
-        self._subscription.applyAll(self, [tr])
       }
     })
   }
@@ -212,10 +209,9 @@ TransactionService.prototype.startTransaction = function (name, type) {
     self.applyAsync(function () {
       self._logger.debug('TransactionService transaction finished', tr)
 
-      if (tr.spans.length > 1 && !self.shouldIgnoreTransaction(tr.name)) {
+      if (tr.spans.length > 0 && !self.shouldIgnoreTransaction(tr.name)) {
         self.capturePageLoadMetrics(tr)
         self.add(tr)
-        self._subscription.applyAll(self, [tr])
       }
     })
   }
@@ -264,16 +260,8 @@ TransactionService.prototype.add = function (transaction) {
     return
   }
 
-  this._queue.push(transaction)
+  this._subscription.applyAll(this, [transaction])
   this._logger.debug('TransactionService.add', transaction)
-}
-
-TransactionService.prototype.getTransactions = function () {
-  return this._queue
-}
-
-TransactionService.prototype.clearTransactions = function () {
-  this._queue = []
 }
 
 TransactionService.prototype.subscribe = function (fn) {

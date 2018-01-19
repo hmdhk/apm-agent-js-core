@@ -20,8 +20,6 @@ describe('PerformanceMonitoring', function () {
     performanceMonitoring = serviceFactory.getService('PerformanceMonitoring')
   })
   it('should send performance monitoring data to apm-server', function (done) {
-
-    // performanceMonitoring._transactionService
     var tr = new Transaction('tr-name', 'tr-type', configService.config, logger)
     var span1 = new Span('span 1', 'test-span')
     span1.end()
@@ -152,23 +150,58 @@ describe('PerformanceMonitoring', function () {
     expect(resp).toBe(false)
   })
 
-  it('should scheduleTransactionSend', function () {
-    expect(performanceMonitoring._sendIntervalId).toBeUndefined()
-    performanceMonitoring.scheduleTransactionSend()
-    expect(performanceMonitoring._sendIntervalId).toBeDefined()
-    clearInterval(performanceMonitoring._sendIntervalId)
-  })
-
   it('should sendTransactionInterval', function () {
-    var result = performanceMonitoring.sendTransactionInterval()
-    expect(result).toBeUndefined()
     var transactionService = serviceFactory.getService('TransactionService')
+    expect(configService.isValid()).toBe(true)
     var tr = new Transaction('test transaction', 'transaction', {}, logger)
     var span = tr.startSpan('test span', 'test span thype')
     span.end()
     tr.detectFinish()
-    transactionService._queue.push(tr)
-    result = performanceMonitoring.sendTransactionInterval()
+    var result = performanceMonitoring.sendTransactions([tr])
     expect(result).toBeDefined()
+  })
+
+  it('should filter transactions', function () {
+    configService.setConfig({
+      browserResponsivenessInterval: 500,
+      checkBrowserResponsiveness: true,
+      browserResponsivenessBuffer: 2
+    })
+    spyOn(logger, 'debug').and.callThrough()
+    expect(logger.debug).not.toHaveBeenCalled()
+    var tr = new Transaction('transaction', 'transaction')
+    tr.end()
+    tr._rootSpan._start = 1
+
+    tr._rootSpan._end = 3001
+    tr.browserResponsivenessCounter = 3
+    var wasBrowserResponsive = performanceMonitoring.filterTransaction(tr)
+    expect(wasBrowserResponsive).toBe(false)
+    expect(logger.debug)
+      .toHaveBeenCalledWith('Transaction was discarded! browser was not responsive enough during the transaction.',
+        ' duration:', 3000, ' browserResponsivenessCounter:', 3, 'interval:', 500)
+  })
+
+  it('should initialize', function (done) {
+    var _fork = window.Zone.current.fork
+    var zoneService = serviceFactory.getService('ZoneService')
+    performanceMonitoring.init()
+    spyOn(apmServer, 'addTransaction').and.callThrough()
+
+    zoneService.runInApmZone(function () {
+      var tr = performanceMonitoring._transactionService.startTransaction('transaction', 'transaction')
+      var span = tr.startSpan('test span', 'test span type')
+      span.end()
+      span = tr.startSpan('test span 2', 'test span type')
+      span.end()
+      tr.detectFinish()
+      setTimeout(() => {
+        expect(apmServer.addTransaction).toHaveBeenCalledWith(jasmine.objectContaining({
+          name: 'transaction',
+          type: 'transaction'
+        }))
+        done()
+      }, 10)
+    })
   })
 })

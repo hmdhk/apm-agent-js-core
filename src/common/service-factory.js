@@ -48,6 +48,9 @@ class ServiceFactory {
     configService.subscribeToChange(function (newConfig) {
       setLogLevel(Logger, configService)
     })
+
+    var apmServer = serviceFactory.getService('ApmServer')
+    apmServer.init()
   }
 
   registerServiceCreator (name, creator) {

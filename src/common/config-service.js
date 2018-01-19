@@ -27,6 +27,10 @@ function Config () {
     includeXHRQueryString: false,
     capturePageLoad: true,
     ignoreTransactions: [],
+    throttlingRequestLimit: 20,
+    throttlingInterval: 30000, // 30s
+    queueLimit: 20,
+    flushInterval: 500,
 
     hasRouterLibrary: false,
 
