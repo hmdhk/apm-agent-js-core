@@ -9,6 +9,7 @@ function Config () {
     agentName: 'js-base',
     agentVersion: '%%agent-version%%',
     serverUrl: 'http://localhost:8200',
+    serverStringLimit: 1024,
     serverUrlPrefix: '/v1/client-side',
     active: true,
     isInstalled: false,
@@ -96,20 +97,37 @@ Config.prototype.set = function (key, value) {
 
 Config.prototype.setUserContext = function (userContext) {
   var context = {}
-  if (typeof userContext.id === 'string' || typeof userContext.id === 'number') {
+  if (typeof userContext.id === 'number') {
     context.id = userContext.id
+  } else if (typeof userContext.id === 'string') {
+    context.id = this.truncateString(userContext.id)
   }
   if (typeof userContext.username === 'string') {
-    context.username = userContext.username
+    context.username = this.truncateString(userContext.username)
   }
   if (typeof userContext.email === 'string') {
-    context.email = userContext.email
+    context.email = this.truncateString(userContext.email)
   }
   this.set('context.user', context)
 }
 
 Config.prototype.setCustomContext = function (customContext) {
-  this.set('context.custom', customContext)
+  if (customContext && typeof customContext === 'object') {
+    this.set('context.custom', customContext)
+  }
+}
+
+Config.prototype.truncateString = function (value) {
+  return String(value).substr(0, this.config.serverStringLimit)
+}
+
+Config.prototype.setTag = function (key, value) {
+  if (!key) return false
+  if (!this.config.context.tags) {
+    this.config.context.tags = {}
+  }
+  var skey = key.replace(/[.*]/g, '_')
+  this.config.context.tags[skey] = this.truncateString(value)
 }
 
 Config.prototype.getAgentName = function () {

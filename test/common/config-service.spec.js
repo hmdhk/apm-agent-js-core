@@ -101,6 +101,15 @@ describe('ConfigService', function () {
     expect(userContext).toEqual({})
   })
 
+  it('should setTag', function () {
+    configService.setTag('', 'test')
+    configService.setTag('test', 'test')
+    configService.setTag('test.key', 'test value')
+    configService.setTag('newKey', '')
+    var tags = configService.get('context.tags')
+    expect(tags).toEqual({test: 'test','test_key': 'test value','newKey': ''})
+  })
+
   it('should check config validity', function () {
     var result = configService.isValid()
     expect(result).toBe(false)
