@@ -1,28 +1,26 @@
 var karmaUtils = require('./dev-utils/karma.js')
+var testUtils = require('./dev-utils/test.js')
 
 module.exports = function (config) {
+  // temporarily set firefox version to 44 due to apm-server#676 issue
+  karmaUtils.baseConfig.customLaunchers.SL_FIREFOX.version = '44'
   config.set(karmaUtils.baseConfig)
+  var testConfig = testUtils.getTestConfig()
+  testConfig.agentConfig
   var customConfig = {
     globalConfigs: {
-      useMocks: false,
+      useMocks: testConfig.useMocks,
       agentConfig: {
-        serverUrl: 'http://localhost:8200',
-        serviceName: 'test',
+        serverUrl: testConfig.agentConfig.serverUrl,
+        serviceName: 'apm-agent-js-core-test',
         serviceVersion: 'test-version',
         agentName: 'apm-js-core',
         agentVersion: '0.0.1'
       }
     },
-    testConfig: {
-      sauceLabs: process.env.MODE && process.env.MODE.startsWith('saucelabs'),
-      branch: process.env.TRAVIS_BRANCH,
-      mode: process.env.MODE
-    }
+    testConfig: testConfig.env
   }
 
-  if (customConfig.testConfig.sauceLabs) {
-    customConfig.globalConfigs.useMocks = true
-  }
   console.log('customConfig:', customConfig)
   config.set(customConfig)
   config.files.unshift('test/utils/polyfill.js')

@@ -189,9 +189,30 @@ function runE2eTests (configFilePath, runSelenium) {
   }
 }
 
+function getTestConfig () {
+  var env = getTestEnvironmentVariables()
+  var serverUrl = 'http://localhost:8200'
+  if (env.isTravis) {
+    serverUrl = 'https://frontend-test-apm-server.elastic.co'
+  }
+
+  var config = {
+    agentConfig: {
+      serverUrl: serverUrl,
+      serviceName: 'apm-agent-test'
+    },
+    useMocks: false,
+    mockApmServer: false,
+    serverUrl: serverUrl,
+    env: env
+  }
+  return config
+}
+
 module.exports = {
   runUnitTests: runUnitTests,
   getTestEnvironmentVariables: getTestEnvironmentVariables,
+  getTestConfig: getTestConfig,
   runKarma: runKarma,
   buildE2eBundles: buildE2eBundles,
   startSelenium: startSelenium,
