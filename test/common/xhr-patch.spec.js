@@ -77,7 +77,7 @@ describe('xhrPatch', function () {
     req.send()
   })
 
-  xit('should work with synchronous xhr', function (done) {
+  it('should work with synchronous xhr', function (done) {
     var req = new window.XMLHttpRequest()
     req.open('GET', '/', false)
     req.addEventListener("load", function () {
@@ -85,7 +85,6 @@ describe('xhrPatch', function () {
     });
 
     req.send()
-    printEvents()
     expect(events.map(e => e.event)).toEqual(['schedule', 'invoke'])
   })
 
@@ -135,7 +134,7 @@ describe('xhrPatch', function () {
   });
 
 
-  it('should keep taskcount correctly when abort was called multiple times before request is done',
+  it('should work correctly when abort was called multiple times before request is done',
     function (done) {
       const req = new XMLHttpRequest();
       req.open('get', '/', true);
@@ -188,21 +187,6 @@ describe('xhrPatch', function () {
     }
   });
 
-  it('should work correctly when abort was called multiple times before request is done',
-    function (done) {
-
-      const req = new XMLHttpRequest();
-      req.open('get', '/', true);
-      req.send();
-      req.addEventListener('readystatechange', function (ev) {
-        if (req.readyState >= 2) {
-          expect(() => {
-            req.abort();
-          }).not.toThrow();
-          done();
-        }
-      });
-    });
 
 
   it('should not throw error when get XMLHttpRequest.prototype.onreadystatechange the first time',
@@ -213,7 +197,6 @@ describe('xhrPatch', function () {
       };
       expect(func).not.toThrow();
     });
-
 })
 
 

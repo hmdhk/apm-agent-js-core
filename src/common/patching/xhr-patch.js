@@ -14,21 +14,18 @@ const XHR_METHOD = apmSymbol('xhrMethod');
 export const ADD_EVENT_LISTENER_STR = 'addEventListener';
 export const REMOVE_EVENT_LISTENER_STR = 'removeEventListener';
 
-export const ZONE_SYMBOL_ADD_EVENT_LISTENER = 'addEventListener';
-export const ZONE_SYMBOL_REMOVE_EVENT_LISTENER = 'removeEventListener';
-
 function patchXMLHttpRequest(callback) {
 
   const XMLHttpRequestPrototype = XMLHttpRequest.prototype;
 
-  let oriAddListener = XMLHttpRequestPrototype[ZONE_SYMBOL_ADD_EVENT_LISTENER];
-  let oriRemoveListener = XMLHttpRequestPrototype[ZONE_SYMBOL_REMOVE_EVENT_LISTENER];
+  let oriAddListener = XMLHttpRequestPrototype[ADD_EVENT_LISTENER_STR];
+  let oriRemoveListener = XMLHttpRequestPrototype[REMOVE_EVENT_LISTENER_STR];
   if (!oriAddListener) {
     const XMLHttpRequestEventTarget = window['XMLHttpRequestEventTarget'];
     if (XMLHttpRequestEventTarget) {
       const XMLHttpRequestEventTargetPrototype = XMLHttpRequestEventTarget.prototype;
-      oriAddListener = XMLHttpRequestEventTargetPrototype[ZONE_SYMBOL_ADD_EVENT_LISTENER];
-      oriRemoveListener = XMLHttpRequestEventTargetPrototype[ZONE_SYMBOL_REMOVE_EVENT_LISTENER];
+      oriAddListener = XMLHttpRequestEventTargetPrototype[ADD_EVENT_LISTENER_STR];
+      oriRemoveListener = XMLHttpRequestEventTargetPrototype[REMOVE_EVENT_LISTENER_STR];
     }
   }
 
@@ -52,8 +49,8 @@ function patchXMLHttpRequest(callback) {
     // remove existing event listener
     const listener = target[XHR_LISTENER];
     if (!oriAddListener) {
-      oriAddListener = target[ZONE_SYMBOL_ADD_EVENT_LISTENER];
-      oriRemoveListener = target[ZONE_SYMBOL_REMOVE_EVENT_LISTENER];
+      oriAddListener = target[ADD_EVENT_LISTENER_STR];
+      oriRemoveListener = target[REMOVE_EVENT_LISTENER_STR];
     }
 
     if (listener) {
@@ -75,9 +72,9 @@ function patchXMLHttpRequest(callback) {
     if (!storedTask) {
       target[XHR_TASK] = task;
     }
-    sendNative.apply(target, data.args);
+    var result = sendNative.apply(target, data.args);
     XMLHttpRequest[XHR_SCHEDULED] = true;
-    return task;
+    return result;
   }
 
   function clearTask(task) {
@@ -113,25 +110,24 @@ function patchXMLHttpRequest(callback) {
           aborted: false
         }
       };
-      return scheduleTask(task);
+      var result = scheduleTask(task);
+
+      if (self[XHR_SYNC]) {
+        invokeTask(task)
+      }
+      return result
     });
 
   const abortNative = patchMethod(XMLHttpRequestPrototype, 'abort', () => function (self, args) {
     const task = self[XHR_TASK];
     if (task && typeof task.type == 'string') {
-      // If the XHR has already completed, do nothing.
       // If the XHR has already been aborted, do nothing.
-      // Fix #569, call abort multiple times before done will cause
-      // macroTask task count be negative number
       if ((task.data && task.data.aborted)) {
         return;
       }
       clearTask(task);
     }
     return abortNative.apply(self, args);
-    // Otherwise, we are trying to abort an XHR which has not yet been sent, so there is no
-    // task
-    // to cancel. Do nothing.
   });
 }
 
