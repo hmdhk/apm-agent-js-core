@@ -14,6 +14,5 @@ module.exports = {
     return serviceFactory
   },
   ServiceFactory: ServiceFactory,
-  patchCommon: require('./common/patching/patch-common'),
   utils: utils
 }
