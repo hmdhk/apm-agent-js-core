@@ -5,6 +5,7 @@ var PerformanceMonitoring = require('./performance-monitoring')
 
 var ServiceFactory = require('./common/service-factory')
 var utils = require('./common/utils')
+var patching = require('./common/patching')
 module.exports = {
   createServiceFactory: function () {
     var serviceFactory = new ServiceFactory()
@@ -14,5 +15,6 @@ module.exports = {
     return serviceFactory
   },
   ServiceFactory: ServiceFactory,
+  patching: patching,
   utils: utils
 }

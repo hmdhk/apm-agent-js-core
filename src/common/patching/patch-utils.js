@@ -19,7 +19,7 @@ function isPropertyWritable(propertyDesc) {
   return !(typeof propertyDesc.get === 'function' && typeof propertyDesc.set === 'undefined');
 }
 
-export function attachOriginToPatched(patched, original) {
+function attachOriginToPatched(patched, original) {
   patched[apmSymbol('OriginalDelegate')] = original;
 }
 

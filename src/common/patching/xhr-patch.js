@@ -11,10 +11,16 @@ const XHR_SYNC = apmSymbol('xhrSync');
 const XHR_URL = apmSymbol('xhrURL');
 const XHR_METHOD = apmSymbol('xhrMethod');
 
-export const ADD_EVENT_LISTENER_STR = 'addEventListener';
-export const REMOVE_EVENT_LISTENER_STR = 'removeEventListener';
+const ADD_EVENT_LISTENER_STR = 'addEventListener';
+const REMOVE_EVENT_LISTENER_STR = 'removeEventListener';
+var alreadyPatched = false
 
 function patchXMLHttpRequest(callback) {
+  if (alreadyPatched) {
+    return
+  }
+
+  alreadyPatched = true
 
   const XMLHttpRequestPrototype = XMLHttpRequest.prototype;
 
@@ -105,6 +111,7 @@ function patchXMLHttpRequest(callback) {
         data: {
           target: self,
           method: self[XHR_METHOD],
+          sync: self[XHR_SYNC],
           url: self[XHR_URL],
           args: args,
           aborted: false

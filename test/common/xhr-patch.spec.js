@@ -1,18 +1,27 @@
 var xhrPatch = require('../../src/common/patching/xhr-patch')
-
-var patchUtils = require('../../src/common/patching/patch-utils')
 var urlSympbol = xhrPatch.XHR_URL
 var methodSymbol = xhrPatch.XHR_METHOD
+
+require('./patch')
+var patchSubscription = window['__patchSubscription']
+
 
 
 describe('xhrPatch', function () {
   var events = []
+  var cancelFn
 
-  xhrPatch.patchXMLHttpRequest(function (event, task) {
-    events.push({
-      event,
-      task
+  beforeAll(function () {
+    cancelFn = patchSubscription.subscribe(function (event, task) {
+      events.push({
+        event,
+        task
+      })
     })
+  })
+
+  afterAll(function () {
+    cancelFn()
   })
 
   function mapEvent(event) {
@@ -50,6 +59,7 @@ describe('xhrPatch', function () {
                 "data": {
                   "method": "GET",
                   "url": "/",
+                  "sync": false,
                   "args": [],
                   "aborted": false
                 }
@@ -64,6 +74,7 @@ describe('xhrPatch', function () {
                 "data": {
                   "method": "GET",
                   "url": "/",
+                  "sync": false,
                   "args": [],
                   "aborted": false
                 }
