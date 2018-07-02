@@ -16,6 +16,10 @@ class Span {
     this._start = window.performance.now()
   }
   end () {
+    if (this.ended) {
+      return
+    }
+
     this._end = window.performance.now()
 
     this.ended = true

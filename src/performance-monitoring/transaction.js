@@ -147,6 +147,7 @@ class Transaction {
     }
     this.debugLog('addTask', taskId)
     this._scheduledTasks[taskId] = taskId
+    return taskId
   }
 
   removeTask (taskId) {
