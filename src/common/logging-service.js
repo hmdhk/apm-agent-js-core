@@ -1,7 +1,6 @@
 function noop () {}
 
 class LoggingService {
-
   constructor (spec) {
     if (!spec) spec = {}
     this.levels = ['trace', 'debug', 'info', 'warn', 'error']

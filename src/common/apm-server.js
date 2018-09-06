@@ -48,10 +48,9 @@ class ApmServer {
   }
 
   _postJson (endPoint, payload) {
-    return this._makeHttpRequest('POST',
-      endPoint,
-      JSON.stringify(payload),
-      {'Content-Type': 'application/json'})
+    return this._makeHttpRequest('POST', endPoint, JSON.stringify(payload), {
+      'Content-Type': 'application/json'
+    })
   }
 
   _makeHttpRequest (method, url, payload, headers) {
@@ -71,7 +70,7 @@ class ApmServer {
       xhr.onreadystatechange = function (evt) {
         if (xhr.readyState === 4) {
           var status = xhr.status
-          if (status === 0 || status > 399 && status < 600) {
+          if (status === 0 || (status > 399 && status < 600)) {
             // An http 4xx or 5xx error. Signal an error.
             var err = new Error(url + ' HTTP status: ' + status)
             err.xhr = xhr
@@ -116,13 +115,16 @@ class ApmServer {
     var limit = apmServer._configService.get('errorThrottleLimit')
     var interval = apmServer._configService.get('errorThrottleInterval')
 
-    this.throttleAddError = throttle(this.errorQueue.add.bind(this.errorQueue),
+    this.throttleAddError = throttle(
+      this.errorQueue.add.bind(this.errorQueue),
       function (method, url) {
         apmServer._loggingService.warn('Dropped error due to throttling!')
-      }, {
+      },
+      {
         limit: limit,
         interval: interval
-      })
+      }
+    )
   }
 
   initTransactionQueue () {
@@ -142,13 +144,16 @@ class ApmServer {
     var limit = apmServer._configService.get('transactionThrottleLimit')
     var interval = apmServer._configService.get('transactionThrottleInterval')
 
-    this.throttleAddTransaction = throttle(this.transactionQueue.add.bind(this.transactionQueue),
+    this.throttleAddTransaction = throttle(
+      this.transactionQueue.add.bind(this.transactionQueue),
       function () {
         apmServer._loggingService.warn('Dropped transaction due to throttling!')
-      }, {
+      },
+      {
         limit: limit,
         interval: interval
-      })
+      }
+    )
   }
   addError (error) {
     if (this._configService.isActive()) {
@@ -216,7 +221,6 @@ class ApmServer {
       this.warnOnce(this.logMessages.invalidConfig)
     }
   }
-
 }
 
 module.exports = ApmServer

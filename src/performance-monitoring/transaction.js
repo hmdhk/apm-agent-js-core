@@ -18,7 +18,7 @@ class Transaction {
 
     this.contextInfo = {}
 
-    this.marks
+    this.marks = undefined
     if (this._options.sendVerboseDebugInfo) {
       this.debugLog('Transaction', name, type)
     }
@@ -42,12 +42,12 @@ class Transaction {
   debugLog () {
     if (this._options.sendVerboseDebugInfo) {
       if (!this.contextInfo._debug) {
-        this.contextInfo._debug = {log: []}
+        this.contextInfo._debug = { log: [] }
       }
       if (!this.contextInfo._debug.log) {
         this.contextInfo._debug.log = []
       }
-      var messages = (arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments))
+      var messages = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)
       messages.unshift(Date.now().toString())
       var textMessage = messages.join(' - ')
       this.contextInfo._debug.log.push(textMessage)
@@ -74,7 +74,7 @@ class Transaction {
         domInteractive: marks.domInteractive,
         domComplete: marks.domComplete
       }
-      this.addMarks({navigationTiming: marks, agent: agent})
+      this.addMarks({ navigationTiming: marks, agent: agent })
     }
   }
 
@@ -199,9 +199,12 @@ function findLatestNonXHRSpan (spans) {
   var latestSpan = null
   for (var i = 0; i < spans.length; i++) {
     var span = spans[i]
-    if (span.type && span.type.indexOf('ext') === -1 &&
+    if (
+      span.type &&
+      span.type.indexOf('ext') === -1 &&
       span.type !== 'transaction' &&
-      (!latestSpan || latestSpan._end < span._end)) {
+      (!latestSpan || latestSpan._end < span._end)
+    ) {
       latestSpan = span
     }
   }

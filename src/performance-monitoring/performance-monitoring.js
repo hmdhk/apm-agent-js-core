@@ -42,9 +42,21 @@ class PerformanceMonitoring {
     if (checkBrowserResponsiveness && !tr.isHardNavigation) {
       var buffer = performanceMonitoring._configService.get('browserResponsivenessBuffer')
 
-      var wasBrowserResponsive = performanceMonitoring.checkBrowserResponsiveness(tr, browserResponsivenessInterval, buffer)
+      var wasBrowserResponsive = performanceMonitoring.checkBrowserResponsiveness(
+        tr,
+        browserResponsivenessInterval,
+        buffer
+      )
       if (!wasBrowserResponsive) {
-        performanceMonitoring._logginService.debug('Transaction was discarded! browser was not responsive enough during the transaction.', ' duration:', duration, ' browserResponsivenessCounter:', tr.browserResponsivenessCounter, 'interval:', browserResponsivenessInterval)
+        performanceMonitoring._logginService.debug(
+          'Transaction was discarded! browser was not responsive enough during the transaction.',
+          ' duration:',
+          duration,
+          ' browserResponsivenessCounter:',
+          tr.browserResponsivenessCounter,
+          'interval:',
+          browserResponsivenessInterval
+        )
         return false
       }
     }
@@ -59,7 +71,10 @@ class PerformanceMonitoring {
 
     if (performanceMonitoring._configService.get('groupSimilarSpans')) {
       var similarSpanThreshold = performanceMonitoring._configService.get('similarSpanThreshold')
-      transaction.spans = performanceMonitoring.groupSmallContinuouslySimilarSpans(transaction, similarSpanThreshold)
+      transaction.spans = performanceMonitoring.groupSmallContinuouslySimilarSpans(
+        transaction,
+        similarSpanThreshold
+      )
     }
     performanceMonitoring.setTransactionContextInfo(transaction)
   }
@@ -105,9 +120,9 @@ class PerformanceMonitoring {
   }
 
   sendTransactions (transactions) {
-    var payload = transactions
-      .map(this.createTransactionPayload.bind(this))
-      .filter(function (tr) { return tr })
+    var payload = transactions.map(this.createTransactionPayload.bind(this)).filter(function (tr) {
+      return tr
+    })
     this._logginService.debug('Sending Transactions to apm server.', transactions.length)
 
     // todo: check if transactions are already being sent
@@ -123,35 +138,35 @@ class PerformanceMonitoring {
     var transDuration = transaction.duration()
     var spans = []
     var lastCount = 1
-    transaction.spans
-      .forEach(function (span, index) {
-        if (spans.length === 0) {
-          spans.push(span)
-        } else {
-          var lastSpan = spans[spans.length - 1]
+    transaction.spans.forEach(function (span, index) {
+      if (spans.length === 0) {
+        spans.push(span)
+      } else {
+        var lastSpan = spans[spans.length - 1]
 
-          var isContinuouslySimilar = lastSpan.type === span.type &&
-            lastSpan.signature === span.signature &&
-            span.duration() / transDuration < threshold &&
-            (span._start - lastSpan._end) / transDuration < threshold
+        var isContinuouslySimilar =
+          lastSpan.type === span.type &&
+          lastSpan.signature === span.signature &&
+          span.duration() / transDuration < threshold &&
+          (span._start - lastSpan._end) / transDuration < threshold
 
-          var isLastSpan = transaction.spans.length === index + 1
+        var isLastSpan = transaction.spans.length === index + 1
 
-          if (isContinuouslySimilar) {
-            lastCount++
-            lastSpan._end = span._end
-          }
-
-          if (lastCount > 1 && (!isContinuouslySimilar || isLastSpan)) {
-            lastSpan.signature = lastCount + 'x ' + lastSpan.signature
-            lastCount = 1
-          }
-
-          if (!isContinuouslySimilar) {
-            spans.push(span)
-          }
+        if (isContinuouslySimilar) {
+          lastCount++
+          lastSpan._end = span._end
         }
-      })
+
+        if (lastCount > 1 && (!isContinuouslySimilar || isLastSpan)) {
+          lastSpan.signature = lastCount + 'x ' + lastSpan.signature
+          lastCount = 1
+        }
+
+        if (!isContinuouslySimilar) {
+          spans.push(span)
+        }
+      }
+    })
     return spans
   }
 
@@ -167,7 +182,6 @@ class PerformanceMonitoring {
 
     return wasBrowserResponsive
   }
-
 }
 
 module.exports = PerformanceMonitoring

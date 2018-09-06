@@ -16,7 +16,13 @@ module.exports = {
       var apmService = serviceFactory.getService('ApmServer')
       var zoneService
       var transactionService = serviceFactory.getService('TransactionService')
-      return new PerformanceMonitoring(apmService, configService, loggingService, zoneService, transactionService)
+      return new PerformanceMonitoring(
+        apmService,
+        configService,
+        loggingService,
+        zoneService,
+        transactionService
+      )
     })
   }
 }

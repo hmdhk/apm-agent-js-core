@@ -5,11 +5,19 @@ var apmTaskSymbol = patchUtils.apmSymbol('taskData')
 var urlSympbol = patchUtils.apmSymbol('url')
 var methodSymbol = patchUtils.apmSymbol('method')
 
-var XMLHttpRequest_send = 'XMLHttpRequest.send'
+var XMLHttpRequestSend = 'XMLHttpRequest.send'
 
 var apmDataSymbol = patchUtils.apmSymbol('apmData')
 
-var testTransactionAfterEvents = ['click', 'contextmenu', 'dblclick', 'mousedown', 'keydown', 'keypress', 'keyup'] // leave these out for now: 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover',
+var testTransactionAfterEvents = [
+  'click',
+  'contextmenu',
+  'dblclick',
+  'mousedown',
+  'keydown',
+  'keypress',
+  'keyup'
+] // leave these out for now: 'mouseenter', 'mouseleave', 'mousemove', 'mouseout', 'mouseover',
 var testTransactionAfterEventsObj = {}
 testTransactionAfterEvents.forEach(function (ev) {
   testTransactionAfterEventsObj[ev] = 1
@@ -21,8 +29,8 @@ function ZoneService (logger, config) {
   var nextId = 0
 
   // var zoneService = this
-  function noop () { }
-  var spec = this.spec = {
+  function noop () {}
+  var spec = (this.spec = {
     onScheduleTask: noop,
     onBeforeInvokeTask: noop,
     onInvokeTask: noop,
@@ -30,7 +38,7 @@ function ZoneService (logger, config) {
     onHandleError: noop,
     onInvokeStart: noop,
     onInvokeEnd: noop
-  }
+  })
 
   this.zoneConfig = {
     name: 'apmRootZone',
@@ -41,7 +49,7 @@ function ZoneService (logger, config) {
         var eventName = task.data.taskData.eventName
 
         if (target && typeof target[apmDataSymbol] === 'undefined') {
-          target[apmDataSymbol] = {registeredEventListeners: {}}
+          target[apmDataSymbol] = { registeredEventListeners: {} }
         }
 
         if (task.type === 'eventTask' && eventName === 'apmImmediatelyFiringEvent') {
@@ -50,7 +58,9 @@ function ZoneService (logger, config) {
         }
 
         if (target && (eventName === 'readystatechange' || eventName === 'load')) {
-          target[apmDataSymbol].registeredEventListeners[eventName] = {resolved: false}
+          target[apmDataSymbol].registeredEventListeners[eventName] = {
+            resolved: false
+          }
         }
       } else if (task.type === 'macroTask') {
         logger.trace('Zone: ', targetZone.name)
@@ -66,7 +76,7 @@ function ZoneService (logger, config) {
             task[apmTaskSymbol] = apmTask
             spec.onScheduleTask(apmTask)
           }
-        } else if (task.source === XMLHttpRequest_send) {
+        } else if (task.source === XMLHttpRequestSend) {
           /*
                   "XMLHttpRequest.addEventListener:load"
                   "XMLHttpRequest.addEventListener:error"
@@ -77,7 +87,7 @@ function ZoneService (logger, config) {
 
           apmTask['XHR'] = {
             resolved: false,
-            'send': false,
+            send: false,
             url: task.data.target[urlSympbol],
             method: task.data.target[methodSymbol]
           }
@@ -88,7 +98,9 @@ function ZoneService (logger, config) {
             if (typeof event.target[apmDataSymbol] !== 'undefined') {
               task.data.target[apmDataSymbol] = event.target[apmDataSymbol]
             } else {
-              task.data.target[apmDataSymbol] = event.target[apmDataSymbol] = {registeredEventListeners: {}}
+              task.data.target[apmDataSymbol] = event.target[apmDataSymbol] = {
+                registeredEventListeners: {}
+              }
             }
           })
 
@@ -112,7 +124,15 @@ function ZoneService (logger, config) {
       var delegateTask = parentZoneDelegate.scheduleTask(targetZone, task)
       return delegateTask
     },
-    onInvoke: function (parentZoneDelegate, currentZone, targetZone, delegate, applyThis, applyArgs, source) {
+    onInvoke: function (
+      parentZoneDelegate,
+      currentZone,
+      targetZone,
+      delegate,
+      applyThis,
+      applyArgs,
+      source
+    ) {
       var taskId = nextId++
       var apmTask = {
         taskId: source + taskId,
@@ -124,10 +144,17 @@ function ZoneService (logger, config) {
       spec.onInvokeEnd(apmTask)
       return result
     },
-    onInvokeTask: function (parentZoneDelegate, currentZone, targetZone, task, applyThis, applyArgs) {
-      spec.onInvokeStart({source: task.source, type: task.type})
+    onInvokeTask: function (
+      parentZoneDelegate,
+      currentZone,
+      targetZone,
+      task,
+      applyThis,
+      applyArgs
+    ) {
+      spec.onInvokeStart({ source: task.source, type: task.type })
       logger.trace('zoneservice.onInvokeTask', task.source, ' type:', task.type)
-      var target = task.target || task.data && task.data.target
+      var target = task.target || (task.data && task.data.target)
       var eventName = task.eventName
       var result
 
@@ -140,19 +167,33 @@ function ZoneService (logger, config) {
           spec.onBeforeInvokeTask(apmTask)
         } else if (apmTask && eventName === 'load' && 'load' in apmData.registeredEventListeners) {
           apmData.registeredEventListeners.load.resolved = true
-        } else if (apmTask && task.source === XMLHttpRequest_send) {
+        } else if (apmTask && task.source === XMLHttpRequestSend) {
           apmTask.XHR.resolved = true
         }
 
         result = parentZoneDelegate.invokeTask(targetZone, task, applyThis, applyArgs)
-        if (apmTask && (!apmData.registeredEventListeners['load'] || apmData.registeredEventListeners['load'].resolved) && (!apmData.registeredEventListeners['readystatechange'] || apmData.registeredEventListeners['readystatechange'].resolved) && apmTask.XHR.resolved) {
+        if (
+          apmTask &&
+          (!apmData.registeredEventListeners['load'] ||
+            apmData.registeredEventListeners['load'].resolved) &&
+          (!apmData.registeredEventListeners['readystatechange'] ||
+            apmData.registeredEventListeners['readystatechange'].resolved) &&
+          apmTask.XHR.resolved
+        ) {
           spec.onInvokeTask(apmTask)
         }
-      } else if (task[apmTaskSymbol] && (task.source === 'setTimeout' || task.source === 'Promise.then')) {
+      } else if (
+        task[apmTaskSymbol] &&
+        (task.source === 'setTimeout' || task.source === 'Promise.then')
+      ) {
         spec.onBeforeInvokeTask(task[apmTaskSymbol])
         result = parentZoneDelegate.invokeTask(targetZone, task, applyThis, applyArgs)
         spec.onInvokeTask(task[apmTaskSymbol])
-      } else if (task.type === 'eventTask' && target && eventName in testTransactionAfterEventsObj) {
+      } else if (
+        task.type === 'eventTask' &&
+        target &&
+        eventName in testTransactionAfterEventsObj
+      ) {
         var taskId = nextId++
         apmTask = {
           taskId: task.source + taskId,
@@ -169,27 +210,27 @@ function ZoneService (logger, config) {
       } else {
         result = parentZoneDelegate.invokeTask(targetZone, task, applyThis, applyArgs)
       }
-      spec.onInvokeEnd({source: task.source, type: task.type})
+      spec.onInvokeEnd({ source: task.source, type: task.type })
       return result
     },
     onCancelTask: function (parentZoneDelegate, currentZone, targetZone, task) {
       // logger.trace('Zone: ', targetZone.name)
       var apmTask
       if (task.type === 'macroTask') {
-        if (task.source === XMLHttpRequest_send) {
+        if (task.source === XMLHttpRequestSend) {
           apmTask = task.data.target[apmDataSymbol].task
           spec.onCancelTask(apmTask)
-        } else if (task[apmTaskSymbol] && (task.source === 'setTimeout')) {
+        } else if (task[apmTaskSymbol] && task.source === 'setTimeout') {
           apmTask = task[apmTaskSymbol]
           spec.onCancelTask(apmTask)
         }
       }
       return parentZoneDelegate.cancelTask(targetZone, task)
     }
-  // onHandleError: function (parentZoneDelegate, currentZone, targetZone, error) {
-  //   spec.onHandleError(error)
-  //   parentZoneDelegate.handleError(targetZone, error)
-  // }
+    // onHandleError: function (parentZoneDelegate, currentZone, targetZone, error) {
+    //   spec.onHandleError(error)
+    //   parentZoneDelegate.handleError(targetZone, error)
+    // }
   }
 }
 

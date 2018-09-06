@@ -23,7 +23,10 @@ class ServiceFactory {
       return new LoggingService()
     })
     this.registerServiceCreator('ApmServer', function () {
-      return new ApmServer(serviceFactory.getService('ConfigService'), serviceFactory.getService('LoggingService'))
+      return new ApmServer(
+        serviceFactory.getService('ConfigService'),
+        serviceFactory.getService('LoggingService')
+      )
     })
     this.registerServiceInstance('PatchUtils', patchUtils)
     this.registerServiceInstance('Utils', utils)

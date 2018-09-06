@@ -76,9 +76,13 @@ Config.prototype.init = function () {
 }
 
 Config.prototype.get = function (key) {
-  return utils.arrayReduce(key.split('.'), function (obj, i) {
-    return obj && obj[i]
-  }, this.config)
+  return utils.arrayReduce(
+    key.split('.'),
+    function (obj, i) {
+      return obj && obj[i]
+    },
+    this.config
+  )
 }
 
 Config.prototype.getEndpointUrl = function getEndpointUrl (endpoint) {
@@ -88,14 +92,14 @@ Config.prototype.getEndpointUrl = function getEndpointUrl (endpoint) {
 
 Config.prototype.set = function (key, value) {
   var levels = key.split('.')
-  var max_level = levels.length - 1
+  var maxLevel = levels.length - 1
   var target = this.config
 
   utils.arraySome(levels, function (level, i) {
     if (typeof level === 'undefined') {
       return true
     }
-    if (i === max_level) {
+    if (i === maxLevel) {
       target[level] = value
     } else {
       var obj = target[level] || {}
@@ -166,9 +170,12 @@ Config.prototype.subscribeToChange = function (fn) {
 
 Config.prototype.isValid = function () {
   var requiredKeys = ['serviceName', 'serverUrl']
-  var values = utils.arrayMap(requiredKeys, utils.functionBind(function (key) {
-    return (this.config[key] === null) || (this.config[key] === undefined) || (this.config[key] === '')
-  }, this))
+  var values = utils.arrayMap(
+    requiredKeys,
+    utils.functionBind(function (key) {
+      return this.config[key] === null || this.config[key] === undefined || this.config[key] === ''
+    }, this)
+  )
 
   return utils.arrayIndexOf(values, true) === -1
 }
@@ -181,7 +188,7 @@ var _getConfigFromScript = function () {
 
 function _getDataAttributesFromNode (node) {
   var dataAttrs = {}
-  var dataRegex = /^data\-([\w\-]+)$/
+  var dataRegex = /^data-([\w-]+)$/
 
   if (node) {
     var attrs = node.attributes
@@ -191,9 +198,11 @@ function _getDataAttributesFromNode (node) {
         var key = attr.nodeName.match(dataRegex)[1]
 
         // camelCase key
-        key = utils.arrayMap(key.split('-'), function (group, index) {
-          return index > 0 ? group.charAt(0).toUpperCase() + group.substring(1) : group
-        }).join('')
+        key = utils
+          .arrayMap(key.split('-'), function (group, index) {
+            return index > 0 ? group.charAt(0).toUpperCase() + group.substring(1) : group
+          })
+          .join('')
 
         dataAttrs[key] = attr.value || attr.nodeValue
       }
@@ -204,12 +213,14 @@ function _getDataAttributesFromNode (node) {
 }
 
 Config.prototype.isPlatformSupported = function () {
-  return typeof Array.prototype.forEach === 'function' &&
+  return (
+    typeof Array.prototype.forEach === 'function' &&
     typeof JSON.stringify === 'function' &&
     typeof Function.bind === 'function' &&
     window.performance &&
     typeof window.performance.now === 'function' &&
     utils.isCORSSupported()
+  )
 }
 
 module.exports = Config

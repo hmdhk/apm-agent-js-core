@@ -146,8 +146,6 @@ function prepareConfig (defaultConfig) {
       }
       defaultConfig.reporters.push('coverage')
     }
-  // cfg.plugins.push('karma-phantomjs2-launcher')
-  // cfg.browsers.push('PhantomJS2')
   }
 
   if (isSauce) {

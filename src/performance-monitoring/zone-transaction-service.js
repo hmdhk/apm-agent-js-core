@@ -2,7 +2,6 @@ var TransactionService = require('./transaction-service')
 var utils = require('../common/utils')
 
 class ZoneTransactionService extends TransactionService {
-
   constructor (zoneService, logger, config) {
     super(logger, config)
 
@@ -74,7 +73,6 @@ class ZoneTransactionService extends TransactionService {
   runOuter (fn, applyThis, applyArgs) {
     return this._zoneService.runOuter(fn, applyThis, applyArgs)
   }
-
 }
 
 module.exports = ZoneTransactionService

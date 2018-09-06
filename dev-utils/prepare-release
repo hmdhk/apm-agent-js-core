@@ -25,7 +25,6 @@ then
     exit 1
 fi
 
-# gulp build && npm test
 npm test
 TEST_RESULT=$?
 if [[ TEST_RESULT -ne 0 ]];
@@ -66,8 +65,6 @@ fi
 git add package.json CHANGELOG.md
 git commit -m "chore: version $PACKAGE_VERSION"
 git tag -a $TAG_NAME -m "version $PACKAGE_VERSION"
-
-# gulp build && gulp build:release
 
 # git push origin $BRANCH_NAME
 

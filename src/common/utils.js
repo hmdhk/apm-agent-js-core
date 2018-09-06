@@ -6,13 +6,15 @@ function isCORSSupported () {
 }
 
 function isPlatformSupported () {
-  return typeof window !== 'undefined' &&
+  return (
+    typeof window !== 'undefined' &&
     typeof Array.prototype.forEach === 'function' &&
     typeof JSON.stringify === 'function' &&
     typeof Function.bind === 'function' &&
     window.performance &&
     typeof window.performance.now === 'function' &&
     isCORSSupported()
+  )
 }
 
 function sanitizeString (value, limit, required, placeholder) {
@@ -48,8 +50,23 @@ function sanitizeObjectStrings (obj, limit, required, placeholder) {
 }
 
 var navigationTimingKeys = [
-  'fetchStart', 'domainLookupStart', 'domainLookupEnd', 'connectStart',
-  'connectEnd', 'secureConnectionStart', 'requestStart', 'responseStart', 'responseEnd', 'domLoading', 'domInteractive', 'domContentLoadedEventStart', 'domContentLoadedEventEnd', 'domComplete', 'loadEventStart', 'loadEventEnd']
+  'fetchStart',
+  'domainLookupStart',
+  'domainLookupEnd',
+  'connectStart',
+  'connectEnd',
+  'secureConnectionStart',
+  'requestStart',
+  'responseStart',
+  'responseEnd',
+  'domLoading',
+  'domInteractive',
+  'domContentLoadedEventStart',
+  'domContentLoadedEventEnd',
+  'domComplete',
+  'loadEventStart',
+  'loadEventEnd'
+]
 
 function getNavigationTimingMarks () {
   if (window.performance && window.performance.timing) {
@@ -68,9 +85,9 @@ function getNavigationTimingMarks () {
 
 function getPageMetadata () {
   return {
-    'page': {
-      'referer': document.referrer,
-      'url': window.location.href
+    page: {
+      referer: document.referrer,
+      url: window.location.href
     }
   }
 }
@@ -249,7 +266,7 @@ module.exports = {
   },
 
   isUndefined: function (obj) {
-    return (typeof obj) === 'undefined'
+    return typeof obj === 'undefined'
   },
 
   isCORSSupported: isCORSSupported,
@@ -286,7 +303,7 @@ module.exports = {
 
   parseUrl: function parseUrl (url) {
     // source: angular.js/$LocationProvider
-    var PATH_MATCH = /^([^\?#]*)(\?([^#]*))?(#(.*))?$/
+    var PATH_MATCH = /^([^?#]*)(\?([^#]*))?(#(.*))?$/
     var match = PATH_MATCH.exec(url)
     var path = match[1] || ''
     var queryString = match[3] || ''
@@ -308,7 +325,13 @@ module.exports = {
       var key = keyvalue.shift()
       params[key] = keyvalue.join('=')
     }
-    return { protocol: protocol, path: path, queryString: queryString, queryStringParsed: params, hash: hash }
+    return {
+      protocol: protocol,
+      path: path,
+      queryString: queryString,
+      queryStringParsed: params,
+      hash: hash
+    }
   },
 
   isPlatformSupported: isPlatformSupported,

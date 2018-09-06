@@ -35,7 +35,7 @@ class ErrorLogging {
       culprit = fileName
     }
 
-    var message = errorEvent.message || errorEvent.error && errorEvent.error.message
+    var message = errorEvent.message || (errorEvent.error && errorEvent.error.message)
     var errorType = errorEvent.error ? errorEvent.error.name : undefined
     if (!errorType) {
       // Try to extract type from message formatted like 'ReferenceError: Can't find variable: initHighlighting'
@@ -132,7 +132,6 @@ class ErrorLogging {
     })
     return properties
   }
-
 }
 
 module.exports = ErrorLogging

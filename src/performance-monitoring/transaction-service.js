@@ -166,24 +166,26 @@ class TransactionService {
 
   applyAsync (fn, applyThis, applyArgs) {
     return this.runOuter(function () {
-      return Promise.resolve()
-        .then(function () {
+      return Promise.resolve().then(
+        function () {
           return fn.apply(applyThis, applyArgs)
-        }, function (reason) {
+        },
+        function (reason) {
           console.log(reason)
-        })
+        }
+      )
     })
   }
-  shouldIgnoreTransaction (transaction_name) {
+  shouldIgnoreTransaction (transactionName) {
     var ignoreList = this._config.get('ignoreTransactions')
 
     for (var i = 0; i < ignoreList.length; i++) {
       var element = ignoreList[i]
       if (typeof element.test === 'function') {
-        if (element.test(transaction_name)) {
+        if (element.test(transactionName)) {
           return true
         }
-      } else if (element === transaction_name) {
+      } else if (element === transactionName) {
         return true
       }
     }

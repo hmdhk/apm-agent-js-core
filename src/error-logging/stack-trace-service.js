@@ -21,9 +21,9 @@ class StackTraceService {
     if (!stackTraces || stackTraces.length === 0) {
       stackTraces = [
         {
-          'fileName': errorEvent.filename,
-          'lineNumber': errorEvent.lineno,
-          'columnNumber': errorEvent.colno
+          fileName: errorEvent.filename,
+          lineNumber: errorEvent.lineno,
+          columnNumber: errorEvent.colno
         }
       ]
     }
@@ -46,11 +46,11 @@ class StackTraceService {
       }
 
       return {
-        'abs_path': stack.fileName,
-        'filename': fileName,
-        'function': stack.functionName || '<anonymous>',
-        'lineno': stack.lineNumber,
-        'colno': stack.columnNumber
+        abs_path: stack.fileName,
+        filename: fileName,
+        function: stack.functionName || '<anonymous>',
+        lineno: stack.lineNumber,
+        colno: stack.columnNumber
       }
     })
 
@@ -61,14 +61,19 @@ class StackTraceService {
     var result = []
     if (Array.isArray(frames)) {
       result = frames.filter(function (f) {
-        return (typeof f['filename'] !== 'undefined' && typeof f['lineno'] !== 'undefined')
+        return typeof f['filename'] !== 'undefined' && typeof f['lineno'] !== 'undefined'
       })
     }
     return result
   }
 
   filePathToFileName (fileUrl) {
-    var origin = window.location.origin || window.location.protocol + '//' + window.location.hostname + (window.location.port ? (':' + window.location.port) : '')
+    var origin =
+      window.location.origin ||
+      window.location.protocol +
+        '//' +
+        window.location.hostname +
+        (window.location.port ? ':' + window.location.port : '')
 
     if (fileUrl.indexOf(origin) > -1) {
       fileUrl = fileUrl.replace(origin + '/', '')
