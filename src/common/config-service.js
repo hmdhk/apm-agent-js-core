@@ -144,12 +144,12 @@ Config.prototype.setCustomContext = function (customContext) {
 }
 
 Config.prototype.setTag = function (key, value) {
-  if (!key) return false
+  if (!key) return
   if (!this.config.context.tags) {
     this.config.context.tags = {}
   }
-  var skey = key.replace(/[.*]/g, '_')
-  this.config.context.tags[skey] = utils.sanitizeString(value, this.get('serverStringLimit'))
+
+  utils.setTag(key, value, this.config.context.tags)
 }
 
 Config.prototype.setTags = function (tags) {

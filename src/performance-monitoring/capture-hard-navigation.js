@@ -92,7 +92,7 @@ function createResourceTimingSpans (entries, filterUrls) {
       ) {
         var parsedUrl = utils.parseUrl(entry.name)
         var span = new Span(parsedUrl.path || entry.name, kind)
-        span.setContext({
+        span.addContext({
           http: {
             url: entry.name
           }

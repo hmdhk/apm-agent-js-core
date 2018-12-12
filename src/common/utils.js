@@ -135,6 +135,14 @@ function sanitizeString (value, limit, required, placeholder) {
   }
 }
 
+function setTag (key, value, obj) {
+  if (!obj) return
+  if (!key) return
+  var skey = key.replace(/[.*]/g, '_')
+  obj[skey] = sanitizeString(value, 1024)
+  return obj
+}
+
 function sanitizeObjectStrings (obj, limit, required, placeholder) {
   if (!obj) return obj
   if (typeof obj === 'string') {
@@ -433,7 +441,8 @@ module.exports = {
   generateRandomId: generateRandomId,
   isSameOrigin: isSameOrigin,
   getDtHeaderValue: getDtHeaderValue,
-  isDtHeaderValid: isDtHeaderValid
+  isDtHeaderValid: isDtHeaderValid,
+  setTag: setTag
 }
 
 function isObject (value) {

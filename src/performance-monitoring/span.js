@@ -1,7 +1,9 @@
-var utils = require('../common/utils')
+const utils = require('../common/utils')
+const BaseSpan = require('./SpanBase')
 
-class Span {
+class Span extends BaseSpan {
   constructor (name, type, options) {
+    super()
     this.id = utils.generateRandomId(16)
     var opts = options || {}
     this.traceId = opts.traceId
@@ -46,11 +48,6 @@ class Span {
     var diff = this._end - this._start
 
     return parseFloat(diff)
-  }
-
-  setContext (context) {
-    if (!context) return
-    this.context = utils.merge(this.context || {}, context)
   }
 }
 

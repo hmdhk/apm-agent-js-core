@@ -63,7 +63,7 @@ class PerformanceMonitoring {
                 }
               }
             }
-            span.setContext({
+            span.addContext({
               http: {
                 method: task.data.method,
                 url: task.data.url
@@ -74,9 +74,9 @@ class PerformanceMonitoring {
           }
         } else if (event === patchUtils.INVOKE && task.data && task.data.span) {
           if (typeof task.data.target.status !== 'undefined') {
-            task.data.span.setContext({ http: { status_code: task.data.target.status } })
+            task.data.span.addContext({ http: { status_code: task.data.target.status } })
           } else if (task.data.response) {
-            task.data.span.setContext({ http: { status_code: task.data.response.status } })
+            task.data.span.addContext({ http: { status_code: task.data.response.status } })
           }
           task.data.span.end()
         }
