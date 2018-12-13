@@ -151,7 +151,12 @@ Config.prototype.setTag = function (key, value) {
   utils.setTag(key, value, this.config.context.tags)
 }
 
+// deprecated
 Config.prototype.setTags = function (tags) {
+  this.addTags(tags)
+}
+
+Config.prototype.addTags = function (tags) {
   var configService = this
   var keys = Object.keys(tags)
   keys.forEach(function (k) {
