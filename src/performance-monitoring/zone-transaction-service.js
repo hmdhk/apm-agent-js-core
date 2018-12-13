@@ -12,7 +12,6 @@ class ZoneTransactionService extends TransactionService {
       if (task.source === 'XMLHttpRequest.send' && task.span && !task.span.ended) {
         task.span.end()
       }
-      transactionService.logInTransaction('Executing', task.taskId)
     }
     zoneService.spec.onBeforeInvokeTask = onBeforeInvokeTask
 
@@ -41,8 +40,6 @@ class ZoneTransactionService extends TransactionService {
     function onInvokeTask (task) {
       if (task.source === 'XMLHttpRequest.send' && task.span && !task.span.ended) {
         task.span.end()
-        transactionService.logInTransaction('xhr late ending')
-        transactionService.setDebugDataOnTransaction('xhrLateEnding', true)
       }
       transactionService.removeTask(task.taskId)
       transactionService.detectFinish()

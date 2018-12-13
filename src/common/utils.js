@@ -136,8 +136,7 @@ function sanitizeString (value, limit, required, placeholder) {
 }
 
 function setTag (key, value, obj) {
-  if (!obj) return
-  if (!key) return
+  if (!obj || !key) return
   var skey = key.replace(/[.*]/g, '_')
   obj[skey] = sanitizeString(value, 1024)
   return obj

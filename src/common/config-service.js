@@ -21,7 +21,6 @@ function Config () {
     enable: true,
     groupSimilarSpans: true,
     similarSpanThreshold: 0.05,
-    sendVerboseDebugInfo: false,
     includeXHRQueryString: false,
     capturePageLoad: true,
     ignoreTransactions: [],

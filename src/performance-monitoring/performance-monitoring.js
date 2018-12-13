@@ -84,10 +84,10 @@ class PerformanceMonitoring {
     }
   }
 
-  setTransactionContextInfo (transaction) {
+  setTransactionContext (transaction) {
     var context = this._configService.get('context')
     if (context) {
-      transaction.addContextInfo(context)
+      transaction.addContext(context)
     }
   }
 
@@ -150,7 +150,7 @@ class PerformanceMonitoring {
       )
     })
 
-    performanceMonitoring.setTransactionContextInfo(transaction)
+    performanceMonitoring.setTransactionContext(transaction)
   }
 
   createTransactionDataModel (transaction) {
@@ -178,7 +178,7 @@ class PerformanceMonitoring {
       }
     })
 
-    var context = utils.merge({}, configContext, transaction.contextInfo)
+    var context = utils.merge({}, configContext, transaction.context)
     return {
       id: transaction.id,
       trace_id: transaction.traceId,

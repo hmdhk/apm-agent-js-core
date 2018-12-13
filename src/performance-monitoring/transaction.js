@@ -1,8 +1,11 @@
-var Span = require('./span')
+const Span = require('./span')
+const SpanBase = require('./SpanBase')
+
 var utils = require('../common/utils')
 
-class Transaction {
+class Transaction extends SpanBase {
   constructor (name, type, options, logger) {
+    super()
     this.id = utils.generateRandomId(16)
     this.traceId = utils.generateRandomId()
     this.timestamp = undefined
@@ -13,12 +16,7 @@ class Transaction {
     this._logger = logger
     this._options = options || {}
 
-    this.contextInfo = {}
-
     this.marks = undefined
-    if (this._options.sendVerboseDebugInfo) {
-      this.debugLog('Transaction', name, type)
-    }
 
     this.spans = []
     this._activeSpans = {}
@@ -34,33 +32,6 @@ class Transaction {
     this.isHardNavigation = false
 
     this.sampled = Math.random() <= this._options.transactionSampleRate
-  }
-
-  debugLog () {
-    if (this._options.sendVerboseDebugInfo) {
-      if (!this.contextInfo._debug) {
-        this.contextInfo._debug = { log: [] }
-      }
-      if (!this.contextInfo._debug.log) {
-        this.contextInfo._debug.log = []
-      }
-      var messages = arguments.length === 1 ? [arguments[0]] : Array.apply(null, arguments)
-      messages.unshift(Date.now().toString())
-      var textMessage = messages.join(' - ')
-      this.contextInfo._debug.log.push(textMessage)
-      if (this._logger) this._logger.debug(textMessage)
-    }
-  }
-
-  addContextInfo (obj) {
-    utils.merge(this.contextInfo, obj)
-  }
-
-  setDebugData (key, value) {
-    if (!this.contextInfo._debug) {
-      this.contextInfo._debug = {}
-    }
-    this.contextInfo._debug[key] = value
   }
 
   addNavigationTimingMarks () {
@@ -92,7 +63,6 @@ class Transaction {
   }
 
   redefine (name, type, options) {
-    this.debugLog('redefine', name, type)
     this.name = name
     this.type = type
     this._options = options
@@ -103,7 +73,6 @@ class Transaction {
       return
     }
     var transaction = this
-    this.debugLog('startSpan', name, type)
     var opts = typeof options === 'undefined' ? {} : options
 
     opts.onSpanEnd = function (trc) {
@@ -131,7 +100,6 @@ class Transaction {
     if (this.ended) {
       return
     }
-    this.debugLog('end')
     this.ended = true
 
     // truncate active spans
@@ -142,7 +110,7 @@ class Transaction {
     }
 
     var metadata = utils.getPageMetadata()
-    this.addContextInfo(metadata)
+    this.addContext(metadata)
     this._rootSpan.end()
 
     this._adjustStartToEarliestSpan()
@@ -155,14 +123,11 @@ class Transaction {
     if (typeof taskId === 'undefined') {
       taskId = 'autoId' + this.nextAutoTaskId++
     }
-    this.debugLog('addTask', taskId)
     this._scheduledTasks[taskId] = taskId
     return taskId
   }
 
   removeTask (taskId) {
-    this.debugLog('removeTask', taskId)
-    this.setDebugData('lastRemovedTask', taskId)
     delete this._scheduledTasks[taskId]
     this.detectFinish()
   }

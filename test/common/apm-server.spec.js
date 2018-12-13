@@ -13,8 +13,9 @@ function generateTransaction (count) {
     span1.end()
     span1.id = 'span-id-' + i + '-1'
     tr.end()
-    tr.contextInfo.page.referer = 'referer'
-    tr.contextInfo.page.url = 'url'
+    tr.ensureContext()
+    tr.context.page.referer = 'referer'
+    tr.context.page.url = 'url'
     tr._rootSpan._start = 10
     tr._rootSpan._end = 1000
 

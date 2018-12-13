@@ -1,4 +1,4 @@
-var utils = require('../common/utils')
+const utils = require('../common/utils')
 class SpanBase {
   // context
 

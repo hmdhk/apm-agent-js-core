@@ -96,25 +96,15 @@ describe('transaction.Transaction', function () {
     tr.end()
   })
 
-  it('should store contextInfo.url.location', function () {
+  it('should store context.page.url', function () {
     var tr = new Transaction('/', 'transaction')
     tr.detectFinish()
-    var location = tr.contextInfo.page.url
+    var location = tr.context.page.url
     expect(location).toBe(window.location.href)
   })
 
-  it('should store debug.log in contextInfo', function () {
-    var tr = new Transaction('/', 'transaction', { sendVerboseDebugInfo: true })
-    expect(tr.contextInfo._debug.log.length).toBeGreaterThan(0)
-  })
-
-  it('should not create contextInfo._debug if sendVerboseDebugInfo is not true', function () {
-    var tr = new Transaction('/', 'transaction')
-    expect(tr.contextInfo._debug).toBeUndefined()
-  })
-
   it('should redefine transaction', function () {
-    var tr = new Transaction('/', 'transaction', { sendVerboseDebugInfo: true })
+    var tr = new Transaction('/', 'transaction')
     tr.redefine('name', 'type', { test: 'test' })
     expect(tr.name).toBe('name')
     expect(tr.type).toBe('type')
@@ -122,7 +112,7 @@ describe('transaction.Transaction', function () {
   })
 
   it('should add and remove tasks', function () {
-    var tr = new Transaction('/', 'transaction', { sendVerboseDebugInfo: true })
+    var tr = new Transaction('/', 'transaction')
     expect(tr._scheduledTasks).toEqual({})
     tr.addTask('task1')
     expect(tr._scheduledTasks).toEqual({ task1: 'task1' })

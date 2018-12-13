@@ -109,7 +109,6 @@ class TransactionService {
       if (tr.name === 'ZoneTransaction') {
         tr.redefine(name, type, perfOptions)
       } else {
-        this.logInTransaction('ElasticEnding early to start a new transaction:', name, type)
         this._logger.debug('Ending old transaction', tr)
         tr.end()
         tr = this.createTransaction(name, type, perfOptions)
@@ -217,18 +216,7 @@ class TransactionService {
       this._logger.debug('TransactionService.removeTask', taskId)
     }
   }
-  logInTransaction () {
-    var tr = this.getCurrentTransaction()
-    if (!utils.isUndefined(tr) && !tr.ended) {
-      tr.debugLog.apply(tr, arguments)
-    }
-  }
-  setDebugDataOnTransaction (key, value) {
-    var tr = this.getCurrentTransaction()
-    if (!utils.isUndefined(tr) && !tr.ended) {
-      tr.setDebugData(key, value)
-    }
-  }
+
   detectFinish () {
     var tr = this.getCurrentTransaction()
     if (!utils.isUndefined(tr) && !tr.ended) {
