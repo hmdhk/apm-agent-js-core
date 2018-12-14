@@ -1,5 +1,5 @@
 const utils = require('../common/utils')
-const BaseSpan = require('./SpanBase')
+const BaseSpan = require('./span-base')
 
 class Span extends BaseSpan {
   constructor (name, type, options) {

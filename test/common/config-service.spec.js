@@ -118,9 +118,9 @@ describe('ConfigService', function () {
     expect(tags).toEqual({ test: 'test', test_key: 'test value', newKey: '' })
   })
 
-  it('should setTags', function () {
+  it('should addTags', function () {
     var date = new Date()
-    configService.setTags({
+    configService.addTags({
       test: 'test',
       no: 1,
       'test.test': 'test',
@@ -136,7 +136,7 @@ describe('ConfigService', function () {
       date: String(date)
     })
 
-    configService.setTags({
+    configService.addTags({
       test: undefined,
       no: 1,
       'test.test': 'test',

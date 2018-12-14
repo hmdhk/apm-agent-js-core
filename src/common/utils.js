@@ -1,3 +1,4 @@
+const constants = require('./constants')
 var slice = [].slice
 
 function isCORSSupported () {
@@ -138,7 +139,7 @@ function sanitizeString (value, limit, required, placeholder) {
 function setTag (key, value, obj) {
   if (!obj || !key) return
   var skey = key.replace(/[.*]/g, '_')
-  obj[skey] = sanitizeString(value, 1024)
+  obj[skey] = sanitizeString(value, constants.serverStringLimit)
   return obj
 }
 

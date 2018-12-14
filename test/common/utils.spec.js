@@ -266,4 +266,26 @@ describe('lib/utils', function () {
     )
     expect(result).toBe(false)
   })
+
+  it('should setTag', function () {
+    var date = new Date()
+    var tags = {}
+    utils.setTag('key', 'value', undefined)
+    utils.setTag(undefined, 'value', tags)
+    utils.setTag('test', 'test', tags)
+    utils.setTag('no', 1, tags)
+    utils.setTag('test.test', 'passed', tags)
+    utils.setTag('date', date, tags)
+    utils.setTag()
+    utils.setTag('removed', undefined, tags)
+    utils.setTag('obj', {}, tags)
+    expect(tags).toEqual({
+      test: 'test',
+      no: '1',
+      test_test: 'passed',
+      date: String(date),
+      removed: undefined,
+      obj: '[object Object]'
+    })
+  })
 })

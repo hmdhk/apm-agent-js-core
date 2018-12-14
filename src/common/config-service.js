@@ -1,5 +1,6 @@
-var utils = require('./utils')
-var Subscription = require('../common/subscription')
+const utils = require('./utils')
+const Subscription = require('../common/subscription')
+const constants = require('./constants')
 
 function Config () {
   this.config = {}
@@ -37,7 +38,7 @@ function Config () {
 
     sendPageLoadTransaction: true,
 
-    serverStringLimit: 1024,
+    serverStringLimit: constants.serverStringLimit,
 
     distributedTracing: true,
     distributedTracingOrigins: [],
@@ -153,6 +154,7 @@ Config.prototype.setTag = function (key, value) {
 
 // deprecated
 Config.prototype.setTags = function (tags) {
+  console.log('APM: setTags is deprecated, please use addTags instead.')
   this.addTags(tags)
 }
 

@@ -1,5 +1,5 @@
 const Span = require('./span')
-const SpanBase = require('./SpanBase')
+const SpanBase = require('./span-base')
 
 var utils = require('../common/utils')
 
