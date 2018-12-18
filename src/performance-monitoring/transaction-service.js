@@ -45,7 +45,7 @@ class TransactionService {
       return
     }
 
-    var tr = new Transaction(name, type, perfOptions, this._logger)
+    var tr = new Transaction(name, type, perfOptions)
     this.setCurrentTransaction(tr)
     if (perfOptions.checkBrowserResponsiveness) {
       this.startCounter(tr)

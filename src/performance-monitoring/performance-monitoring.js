@@ -183,7 +183,6 @@ class PerformanceMonitoring {
     return {
       id: transaction.id,
       trace_id: transaction.traceId,
-      timestamp: transaction.timestamp,
       name: utils.sanitizeString(transaction.name, stringLimit, false),
       type: utils.sanitizeString(transaction.type, stringLimit, true),
       duration: transaction.duration(),

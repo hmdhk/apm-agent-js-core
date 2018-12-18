@@ -26,7 +26,7 @@ describe('PerformanceMonitoring', function () {
     performanceMonitoring = serviceFactory.getService('PerformanceMonitoring')
   })
   it('should send performance monitoring data to apm-server', function (done) {
-    var tr = new Transaction('tr-name', 'tr-type', configService.config, logger)
+    var tr = new Transaction('tr-name', 'tr-type', configService.config)
     var span1 = new Span('span 1', 'test-span')
     span1.end()
     tr.spans.push(span1)
@@ -161,12 +161,7 @@ describe('PerformanceMonitoring', function () {
 
   it('should sendTransactionInterval', function () {
     expect(configService.isValid()).toBe(true)
-    var tr = new Transaction(
-      'test transaction',
-      'transaction',
-      { transactionSampleRate: 1 },
-      logger
-    )
+    var tr = new Transaction('test transaction', 'transaction', { transactionSampleRate: 1 })
     var span = tr.startSpan('test span', 'test span thype')
     span.end()
     span._end += 10
@@ -335,7 +330,7 @@ describe('PerformanceMonitoring', function () {
 
   it('should filter the transactions with duration above threshold', function () {
     var threshold = configService.get('transactionDurationThreshold')
-    var tr = new Transaction('/test/outlier', 'page-load-slow', configService.config, logger)
+    var tr = new Transaction('/test/outlier', 'page-load-slow', configService.config)
     var span1 = new Span('span 1', 'test-span')
     span1.end()
     tr.spans.push(span1)

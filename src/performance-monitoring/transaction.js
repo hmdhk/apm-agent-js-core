@@ -4,25 +4,17 @@ const SpanBase = require('./span-base')
 var utils = require('../common/utils')
 
 class Transaction extends SpanBase {
-  constructor (name, type, options, logger) {
-    super()
-    this.id = utils.generateRandomId(16)
+  constructor (name, type, options) {
+    super(name, type, options)
     this.traceId = utils.generateRandomId()
-    this.timestamp = undefined
-    this.name = name
-    this.type = type
     this.ended = false
-    this._isDone = false
-    this._logger = logger
-    this._options = options || {}
-
     this.marks = undefined
 
     this.spans = []
     this._activeSpans = {}
 
     this._scheduledTasks = {}
-    this.doneCallback = function noop () {}
+    this.doneCallback = utils.noop
 
     this._rootSpan = new Span('transaction', 'transaction')
 
@@ -31,7 +23,7 @@ class Transaction extends SpanBase {
 
     this.isHardNavigation = false
 
-    this.sampled = Math.random() <= this._options.transactionSampleRate
+    this.sampled = Math.random() <= this.options.transactionSampleRate
   }
 
   addNavigationTimingMarks () {
@@ -65,7 +57,7 @@ class Transaction extends SpanBase {
   redefine (name, type, options) {
     this.name = name
     this.type = type
-    this._options = options
+    this.options = options
   }
 
   startSpan (name, type, options) {
@@ -73,15 +65,19 @@ class Transaction extends SpanBase {
       return
     }
     var transaction = this
-    var opts = typeof options === 'undefined' ? {} : options
+    if (!options) options = {}
 
-    opts.onSpanEnd = function (trc) {
+    options.onSpanEnd = function (trc) {
       transaction._onSpanEnd(trc)
     }
-    opts.traceId = this.traceId
-    opts.sampled = this.sampled
+    options.traceId = this.traceId
+    options.sampled = this.sampled
 
-    var span = new Span(name, type, opts)
+    if (!options.parentId) {
+      options.parentId = this.id
+    }
+
+    var span = new Span(name, type, options)
     this._activeSpans[span.id] = span
 
     return span

@@ -3,18 +3,9 @@ const BaseSpan = require('./span-base')
 
 class Span extends BaseSpan {
   constructor (name, type, options) {
-    super()
-    this.id = utils.generateRandomId(16)
-    var opts = options || {}
-    this.traceId = opts.traceId
-    this.sampled = opts.sampled
-    if (typeof opts.onSpanEnd === 'function') {
-      this.onSpanEnd = opts.onSpanEnd
-    } else {
-      this.onSpanEnd = function () {}
-    }
-    this.name = name
-    this.type = type
+    super(name, type, options)
+    this.parentId = this.options.parentId
+    this.onSpanEnd = this.options.onSpanEnd
     this.subType = undefined
     this.action = undefined
     if (type.indexOf('.') !== -1) {
@@ -25,11 +16,10 @@ class Span extends BaseSpan {
     }
     this.ended = false
     this._end = undefined
-    this.context = undefined
-    this.sync = opts.sync
-    // Start timers
+    this.sync = this.options.sync
     this._start = window.performance.now()
   }
+
   end () {
     if (this.ended) {
       return
@@ -38,7 +28,9 @@ class Span extends BaseSpan {
     this._end = window.performance.now()
 
     this.ended = true
-    this.onSpanEnd(this)
+    if (typeof this.onSpanEnd === 'function') {
+      this.onSpanEnd(this)
+    }
   }
 
   duration () {

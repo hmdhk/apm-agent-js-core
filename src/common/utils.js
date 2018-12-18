@@ -442,7 +442,8 @@ module.exports = {
   isSameOrigin: isSameOrigin,
   getDtHeaderValue: getDtHeaderValue,
   isDtHeaderValid: isDtHeaderValid,
-  setTag: setTag
+  setTag: setTag,
+  noop: function () {}
 }
 
 function isObject (value) {

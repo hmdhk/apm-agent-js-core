@@ -158,8 +158,8 @@ function prepareConfig (defaultConfig) {
       defaultConfig.plugins.push('karma-coverage')
 
       var babelPlugins =
-        defaultConfig.webpack.module.loaders[0].query.plugins ||
-        (defaultConfig.webpack.module.loaders[0].query.plugins = [])
+        defaultConfig.webpack.module.rules[0].options.plugins ||
+        (defaultConfig.webpack.module.rules[0].options.plugins = [])
       babelPlugins.push('istanbul')
 
       defaultConfig.coverageReporter = {

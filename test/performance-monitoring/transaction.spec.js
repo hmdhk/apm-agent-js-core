@@ -108,7 +108,7 @@ describe('transaction.Transaction', function () {
     tr.redefine('name', 'type', { test: 'test' })
     expect(tr.name).toBe('name')
     expect(tr.type).toBe('type')
-    expect(tr._options).toEqual({ test: 'test' })
+    expect(tr.options).toEqual({ test: 'test' })
   })
 
   it('should add and remove tasks', function () {
@@ -158,5 +158,14 @@ describe('transaction.Transaction', function () {
     expect(transaction.spans.length).toBe(1)
     expect(Object.keys(transaction._activeSpans).length).toBe(0)
     expect(span.type).toContain('.truncated')
+  })
+
+  it('should always set span parentId', function () {
+    var transaction = new Transaction('transaction', 'transaction')
+
+    var span = transaction.startSpan('name', 'type')
+    expect(span.parentId).toBe(transaction.id)
+    span = transaction.startSpan('name', 'type', { parentId: 'test-parent-id' })
+    expect(span.parentId).toBe('test-parent-id')
   })
 })
