@@ -3,14 +3,13 @@ class SpanBase {
   // context
 
   constructor (name, type, options) {
-    if (!options) options = {}
     this.name = name
     this.type = type
-    this.options = options
-    this.id = options.id || utils.generateRandomId(16)
-    this.traceId = options.traceId
-    this.sampled = options.sampled
-    this.timestamp = options.timestamp || Date.now()
+    this.options = options || {}
+    this.id = this.options.id || utils.generateRandomId(16)
+    this.traceId = this.options.traceId
+    this.sampled = this.options.sampled
+    this.timestamp = this.options.timestamp || Date.now()
   }
 
   ensureContext () {
