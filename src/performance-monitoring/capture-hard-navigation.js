@@ -14,10 +14,7 @@ var spanThreshold = 5 * 60 * 1000
 function isValidSpan (transaction, span) {
   var d = span.duration()
   return (
-    d < spanThreshold &&
-    d > 0 &&
-    span._start <= transaction._rootSpan._end &&
-    span._end <= transaction._rootSpan._end
+    d < spanThreshold && d > 0 && span._start <= transaction._end && span._end <= transaction._end
   )
 }
 
@@ -112,7 +109,7 @@ function captureHardNavigation (transaction) {
     var timings = window.performance.timing
     var baseTime = timings.fetchStart
     // must be zero otherwise the calculated relative _start time would be wrong
-    transaction._rootSpan._start = 0
+    transaction._start = 0
     transaction.type = 'page-load'
 
     createNavigationTimingSpans(timings, baseTime).forEach(function (span) {

@@ -29,10 +29,11 @@ describe('TransactionService', function () {
     var tr = new Transaction('transaction', 'transaction')
     spyOn(tr, 'startSpan').and.callThrough()
     transactionService.setCurrentTransaction(tr)
-    transactionService.startSpan('test-span', 'test-span')
+    transactionService.startSpan('test-span', 'test-span', { test: 'passed' })
     expect(transactionService.getCurrentTransaction().startSpan).toHaveBeenCalledWith(
       'test-span',
-      'test-span'
+      'test-span',
+      { test: 'passed' }
     )
   })
 
@@ -65,21 +66,21 @@ describe('TransactionService', function () {
     result = transactionService.startTransaction('transaction2', 'transaction')
     expect(result.name).toBe('transaction2')
 
-    var origCb = result.doneCallback
-    result.doneCallback = function () {
+    var origCb = result.onEnd
+    result.onEnd = function () {
       var r = origCb.apply(this, arguments)
       done()
       return r
     }
-    spyOn(result, 'doneCallback').and.callThrough()
+    spyOn(result, 'onEnd').and.callThrough()
     transactionService.addTask('task1')
     var span = transactionService.startSpan('test', 'test')
     span.end()
     transactionService.detectFinish()
-    expect(result.doneCallback).not.toHaveBeenCalled()
+    expect(result.onEnd).not.toHaveBeenCalled()
     transactionService.removeTask('task1')
     transactionService.detectFinish()
-    expect(result.doneCallback).toHaveBeenCalled()
+    expect(result.onEnd).toHaveBeenCalled()
   })
 
   it('should create a zone transaction on the first span', function () {
@@ -107,8 +108,8 @@ describe('TransactionService', function () {
     transactionService = new TransactionService(logger, config)
 
     var tr1 = transactionService.startTransaction('transaction1', 'transaction')
-    var tr1DoneFn = tr1.doneCallback
-    tr1.doneCallback = function () {
+    var tr1DoneFn = tr1.onEnd
+    tr1.onEnd = function () {
       tr1DoneFn()
       expect(tr1.isHardNavigation).toBe(true)
       tr1.spans.forEach(function (t) {
@@ -122,8 +123,8 @@ describe('TransactionService', function () {
 
     var tr2 = transactionService.startTransaction('transaction2', 'transaction')
     expect(tr2.isHardNavigation).toBe(false)
-    var tr2DoneFn = tr2.doneCallback
-    tr2.doneCallback = function () {
+    var tr2DoneFn = tr2.onEnd
+    tr2.onEnd = function () {
       tr2DoneFn()
       expect(tr2.isHardNavigation).toBe(false)
       done()

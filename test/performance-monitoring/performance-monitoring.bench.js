@@ -7,8 +7,8 @@ function generateTransaction () {
   span.end()
   tr.detectFinish()
 
-  if (tr._rootSpan._end === tr._rootSpan._start) {
-    tr._rootSpan._end = tr._rootSpan._end + 100
+  if (tr._end === tr._start) {
+    tr._end = tr._end + 100
   }
   return tr
 }

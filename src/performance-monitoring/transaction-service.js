@@ -133,7 +133,7 @@ class TransactionService {
     }
 
     this._logger.debug('TransactionService.startTransaction', tr)
-    tr.doneCallback = function () {
+    tr.onEnd = function () {
       self.applyAsync(function () {
         self._logger.debug('TransactionService transaction finished', tr)
         if (!self.shouldIgnoreTransaction(tr.name)) {
@@ -181,12 +181,12 @@ class TransactionService {
     }
     return false
   }
-  startSpan (name, type) {
+  startSpan (name, type, options) {
     var trans = this.getOrCreateCurrentTransaction()
 
     if (trans) {
       this._logger.debug('TransactionService.startSpan', name, type)
-      var span = trans.startSpan(name, type)
+      var span = trans.startSpan(name, type, options)
       return span
     }
   }

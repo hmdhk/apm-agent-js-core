@@ -26,9 +26,9 @@ describe('transaction.Transaction', function () {
     firstSpan.end()
 
     var transaction = new Transaction('/', 'transaction', {})
-    transaction.doneCallback = function () {
-      expect(transaction._rootSpan._start).toBe(firstSpan._start)
-      expect(transaction._rootSpan._end >= lastSpan._end).toBeTruthy()
+    transaction.onEnd = function () {
+      expect(transaction._start).toBe(firstSpan._start)
+      expect(transaction._end >= lastSpan._end).toBeTruthy()
       done()
     }
     firstSpan.transaction = transaction
@@ -42,7 +42,7 @@ describe('transaction.Transaction', function () {
 
   it('should adjust rootSpan to latest span', function (done) {
     var transaction = new Transaction('/', 'transaction', {})
-    var rootSpanStart = transaction._rootSpan._start
+    var rootSpanStart = transaction._start
 
     var firstSpan = transaction.startSpan('first-span-name', 'first-span')
     firstSpan.end()
@@ -57,8 +57,8 @@ describe('transaction.Transaction', function () {
       transaction.detectFinish()
 
       setTimeout(function () {
-        expect(transaction._rootSpan._start).toBe(rootSpanStart)
-        expect(transaction._rootSpan._end).toEqual(longSpan._end)
+        expect(transaction._start).toBe(rootSpanStart)
+        expect(transaction._end).toEqual(longSpan._end)
         done()
       })
     }, 500)
@@ -82,7 +82,7 @@ describe('transaction.Transaction', function () {
 
   it('should not generate stacktrace if the option is not passed', function (done) {
     var tr = new Transaction('/', 'transaction')
-    tr.doneCallback = function () {
+    tr.onEnd = function () {
       expect(firstSpan.frames).toBeUndefined()
       expect(secondSpan.frames).toBeUndefined()
       done()

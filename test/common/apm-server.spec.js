@@ -16,8 +16,8 @@ function generateTransaction (count) {
     tr.ensureContext()
     tr.context.page.referer = 'referer'
     tr.context.page.url = 'url'
-    tr._rootSpan._start = 10
-    tr._rootSpan._end = 1000
+    tr._start = 10
+    tr._end = 1000
 
     span1._start = 20
     span1._end = 30

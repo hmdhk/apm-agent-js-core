@@ -7,18 +7,13 @@ class Transaction extends SpanBase {
   constructor (name, type, options) {
     super(name, type, options)
     this.traceId = utils.generateRandomId()
-    this.ended = false
     this.marks = undefined
 
     this.spans = []
     this._activeSpans = {}
 
     this._scheduledTasks = {}
-    this.doneCallback = utils.noop
 
-    this._rootSpan = new Span('transaction', 'transaction')
-
-    this.duration = this._rootSpan.duration.bind(this._rootSpan)
     this.nextAutoTaskId = 0
 
     this.isHardNavigation = false
@@ -48,7 +43,7 @@ class Transaction extends SpanBase {
 
   mark (key) {
     var skey = key.replace(/[.*]/g, '_')
-    var now = window.performance.now() - this._rootSpan._start
+    var now = window.performance.now() - this._start
     var custom = {}
     custom[skey] = now
     this.addMarks({ custom: custom })
@@ -65,19 +60,19 @@ class Transaction extends SpanBase {
       return
     }
     var transaction = this
-    if (!options) options = {}
+    var opts = utils.extend({}, options)
 
-    options.onSpanEnd = function (trc) {
+    opts.onEnd = function (trc) {
       transaction._onSpanEnd(trc)
     }
-    options.traceId = this.traceId
-    options.sampled = this.sampled
+    opts.traceId = this.traceId
+    opts.sampled = this.sampled
 
-    if (!options.parentId) {
-      options.parentId = this.id
+    if (!opts.parentId) {
+      opts.parentId = this.id
     }
 
-    var span = new Span(name, type, options)
+    var span = new Span(name, type, opts)
     this._activeSpans[span.id] = span
 
     return span
@@ -97,7 +92,7 @@ class Transaction extends SpanBase {
       return
     }
     this.ended = true
-
+    this._end = window.performance.now()
     // truncate active spans
     for (var sid in this._activeSpans) {
       var span = this._activeSpans[sid]
@@ -107,11 +102,10 @@ class Transaction extends SpanBase {
 
     var metadata = utils.getPageMetadata()
     this.addContext(metadata)
-    this._rootSpan.end()
 
     this._adjustStartToEarliestSpan()
     this._adjustEndToLatestSpan()
-    this.doneCallback(this)
+    this.callOnEnd()
   }
 
   addTask (taskId) {
@@ -134,7 +128,6 @@ class Transaction extends SpanBase {
 
   _onSpanEnd (span) {
     this.spans.push(span)
-    span._scheduledTasks = Object.keys(this._scheduledTasks)
     // Remove span from _activeSpans
     delete this._activeSpans[span.id]
   }
@@ -143,18 +136,18 @@ class Transaction extends SpanBase {
     var latestSpan = findLatestNonXHRSpan(this.spans)
 
     if (latestSpan) {
-      this._rootSpan._end = latestSpan._end
+      this._end = latestSpan._end
 
       // set all spans that now are longer than the transaction to
       // be truncated spans
       for (var i = 0; i < this.spans.length; i++) {
         var span = this.spans[i]
-        if (span._end > this._rootSpan._end) {
-          span._end = this._rootSpan._end
+        if (span._end > this._end) {
+          span._end = this._end
           span.type = span.type + '.truncated'
         }
-        if (span._start > this._rootSpan._end) {
-          span._start = this._rootSpan._end
+        if (span._start > this._end) {
+          span._start = this._end
         }
       }
     }
@@ -163,8 +156,8 @@ class Transaction extends SpanBase {
   _adjustStartToEarliestSpan () {
     var span = getEarliestSpan(this.spans)
 
-    if (span && span._start < this._rootSpan._start) {
-      this._rootSpan._start = span._start
+    if (span && span._start < this._start) {
+      this._start = span._start
     }
   }
 }

@@ -31,17 +31,6 @@ describe('ZoneTransactionService', function () {
     expect(logger.debug).toHaveBeenCalled()
   })
 
-  it('should call startSpan on current Transaction', function () {
-    var tr = new Transaction('transaction', 'transaction')
-    spyOn(tr, 'startSpan').and.callThrough()
-    transactionService.setCurrentTransaction(tr)
-    transactionService.startSpan('test-span', 'test-span')
-    expect(transactionService.getCurrentTransaction().startSpan).toHaveBeenCalledWith(
-      'test-span',
-      'test-span'
-    )
-  })
-
   it('should not start span when performance monitoring is disabled', function () {
     config.set('active', false)
     transactionService = new ZoneTransactionService(zoneServiceMock, logger, config)
@@ -201,8 +190,8 @@ describe('ZoneTransactionService', function () {
     transactionService = new ZoneTransactionService(zoneServiceMock, logger, config)
 
     var tr1 = transactionService.startTransaction('transaction1', 'transaction')
-    var tr1DoneFn = tr1.doneCallback
-    tr1.doneCallback = function () {
+    var tr1DoneFn = tr1.onEnd
+    tr1.onEnd = function () {
       tr1DoneFn()
       expect(tr1.isHardNavigation).toBe(true)
       tr1.spans.forEach(function (t) {
@@ -216,8 +205,8 @@ describe('ZoneTransactionService', function () {
 
     var tr2 = transactionService.startTransaction('transaction2', 'transaction')
     expect(tr2.isHardNavigation).toBe(false)
-    var tr2DoneFn = tr2.doneCallback
-    tr2.doneCallback = function () {
+    var tr2DoneFn = tr2.onEnd
+    tr2.onEnd = function () {
       tr2DoneFn()
       expect(tr2.isHardNavigation).toBe(false)
       done()

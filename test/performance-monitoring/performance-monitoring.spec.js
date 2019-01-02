@@ -59,8 +59,8 @@ describe('PerformanceMonitoring', function () {
 
     tr.end()
 
-    tr._rootSpan._start = 10
-    tr._rootSpan._end = 1000
+    tr._start = 10
+    tr._end = 1000
 
     span1._start = 20
     span1._end = 30
@@ -103,8 +103,8 @@ describe('PerformanceMonitoring', function () {
 
     tr.end()
 
-    tr._rootSpan._start = 10
-    tr._rootSpan._end = 1000
+    tr._start = 10
+    tr._end = 1000
 
     span1._start = 20
     span1._end = 30
@@ -136,24 +136,24 @@ describe('PerformanceMonitoring', function () {
     var tr = new Transaction('transaction', 'transaction', {})
     tr.end()
 
-    tr._rootSpan._start = 1
+    tr._start = 1
 
-    tr._rootSpan._end = 400
+    tr._end = 400
     tr.browserResponsivenessCounter = 0
     var resp = performanceMonitoring.checkBrowserResponsiveness(tr, 500, 2)
     expect(resp).toBe(true)
 
-    tr._rootSpan._end = 1001
+    tr._end = 1001
     tr.browserResponsivenessCounter = 2
     resp = performanceMonitoring.checkBrowserResponsiveness(tr, 500, 2)
     expect(resp).toBe(true)
 
-    tr._rootSpan._end = 1601
+    tr._end = 1601
     tr.browserResponsivenessCounter = 2
     resp = performanceMonitoring.checkBrowserResponsiveness(tr, 500, 2)
     expect(resp).toBe(true)
 
-    tr._rootSpan._end = 3001
+    tr._end = 3001
     tr.browserResponsivenessCounter = 3
     resp = performanceMonitoring.checkBrowserResponsiveness(tr, 500, 2)
     expect(resp).toBe(false)
@@ -166,9 +166,9 @@ describe('PerformanceMonitoring', function () {
     span.end()
     span._end += 10
     tr.detectFinish()
-    expect(tr._rootSpan._end).toBeDefined()
-    if (tr._rootSpan._end === tr._rootSpan._start) {
-      tr._rootSpan._end = tr._rootSpan._end + 100
+    expect(tr._end).toBeDefined()
+    if (tr._end === tr._start) {
+      tr._end = tr._end + 100
     }
     var result = performanceMonitoring.sendTransactions([tr])
     expect(result).toBeDefined()
@@ -186,9 +186,9 @@ describe('PerformanceMonitoring', function () {
     var span = tr.startSpan('test span', 'test span type')
     span.end()
     tr.end()
-    tr._rootSpan._start = 1
+    tr._start = 1
 
-    tr._rootSpan._end = 3001
+    tr._end = 3001
     tr.browserResponsivenessCounter = 3
     var wasBrowserResponsive = performanceMonitoring.filterTransaction(tr)
     expect(wasBrowserResponsive).toBe(false)
@@ -237,9 +237,9 @@ describe('PerformanceMonitoring', function () {
     span._end += 10
     tr.detectFinish()
 
-    expect(tr._rootSpan._end).toBeDefined()
-    if (tr._rootSpan._end === tr._rootSpan._start) {
-      tr._rootSpan._end = tr._rootSpan._end + 100
+    expect(tr._end).toBeDefined()
+    if (tr._end === tr._start) {
+      tr._end = tr._end + 100
     }
 
     var payload = performanceMonitoring.createTransactionPayload(tr)
@@ -248,7 +248,7 @@ describe('PerformanceMonitoring', function () {
     expect(payload.spans.length).toBe(1)
     expect(payload.spans[0].name).toBe('span1')
     expect(payload.spans[0].type).toBe('span1type')
-    expect(payload.spans[0].start).toBe(span._start - tr._rootSpan._start)
+    expect(payload.spans[0].start).toBe(span._start - tr._start)
     expect(payload.spans[0].duration).toBe(span._end - span._start)
   })
 
@@ -320,8 +320,8 @@ describe('PerformanceMonitoring', function () {
     expect(result).toBe(false)
 
     tr.end()
-    if (tr._rootSpan._end && tr._rootSpan._end === tr._rootSpan._start) {
-      tr._rootSpan._end += 100
+    if (tr._end && tr._end === tr._start) {
+      tr._end += 100
     }
     expect(tr.duration()).toBeGreaterThan(0)
     result = performanceMonitoring.filterTransaction(tr)
@@ -335,7 +335,7 @@ describe('PerformanceMonitoring', function () {
     span1.end()
     tr.spans.push(span1)
     tr.end()
-    tr._rootSpan._end += 60001
+    tr._end += 60001
     expect(tr.duration()).toBeGreaterThanOrEqual(threshold)
     var payload = performanceMonitoring.createTransactionPayload(tr)
     expect(payload).toBeUndefined()
