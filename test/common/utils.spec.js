@@ -267,6 +267,40 @@ describe('lib/utils', function () {
     expect(result).toBe(false)
   })
 
+  it('should parse dt header', function () {
+    var result = utils.parseDtHeaderValue('00-a1bc6db567095621cdc01dd11359217b-0b5a9e8b3c8fd252-01')
+    expect(result).toEqual({
+      traceId: 'a1bc6db567095621cdc01dd11359217b',
+      id: '0b5a9e8b3c8fd252',
+      sampled: true
+    })
+
+    result = utils.parseDtHeaderValue('00-null-0b5a9e8b3c8fd252-01')
+    expect(result).toBe(undefined)
+
+    result = utils.parseDtHeaderValue(undefined)
+    expect(result).toBe(undefined)
+
+    result = utils.parseDtHeaderValue(null)
+    expect(result).toBe(undefined)
+
+    result = utils.parseDtHeaderValue({})
+    expect(result).toBe(undefined)
+
+    result = utils.parseDtHeaderValue(1)
+    expect(result).toBe(undefined)
+
+    result = utils.parseDtHeaderValue('test')
+    expect(result).toBe(undefined)
+  })
+
+  it('should getTimeOrigin', function () {
+    var now = Date.now()
+    var result = utils.getTimeOrigin()
+    expect(typeof result).toBe('number')
+    expect(result).toBeLessThanOrEqual(now)
+  })
+
   it('should setTag', function () {
     var date = new Date()
     var tags = {}

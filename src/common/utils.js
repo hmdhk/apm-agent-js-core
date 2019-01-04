@@ -79,6 +79,19 @@ function getDtHeaderValue (span) {
   }
 }
 
+function parseDtHeaderValue (value) {
+  var parsed = /^([\da-f]{2})-([\da-f]{32})-([\da-f]{16})-([\da-f]{2})$/.exec(value)
+  if (parsed) {
+    var flags = parsed[4]
+    var sampled = flags !== '00'
+    return {
+      traceId: parsed[2],
+      id: parsed[3],
+      sampled
+    }
+  }
+}
+
 function isDtHeaderValid (header) {
   return (
     /^[\da-f]{2}-[\da-f]{32}-[\da-f]{16}-[\da-f]{2}$/.test(header) &&
@@ -216,6 +229,10 @@ function getPaintTimingMarks () {
     }
   }
   return paints
+}
+
+function getTimeOrigin () {
+  return window.performance.timing.fetchStart
 }
 
 function getPageMetadata () {
@@ -443,7 +460,9 @@ module.exports = {
   getDtHeaderValue: getDtHeaderValue,
   isDtHeaderValid: isDtHeaderValid,
   setTag: setTag,
-  noop: function () {}
+  noop: function () {},
+  getTimeOrigin,
+  parseDtHeaderValue
 }
 
 function isObject (value) {

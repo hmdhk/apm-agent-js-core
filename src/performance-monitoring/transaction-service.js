@@ -90,9 +90,20 @@ class TransactionService {
     }
   }
 
-  startTransaction (name, type) {
+  startTransaction (name, type, options) {
     var self = this
-    var perfOptions = self._config.config
+    var config = self._config.config
+
+    var perfOptions = utils.extend(
+      {
+        pageLoadTraceId: config.pageLoadTraceId,
+        pageLoadSampled: config.pageLoadSampled,
+        pageLoadSpanId: config.pageLoadSpanId,
+        pageLoadTransactionName: config.pageLoadTransactionName,
+        transactionSampleRate: config.transactionSampleRate
+      },
+      options
+    )
 
     if (!type) {
       type = 'custom'
@@ -127,8 +138,8 @@ class TransactionService {
         tr.sampled = perfOptions.pageLoadSampled
       }
 
-      if (tr.name === 'Unknown' && self._config.config.pageLoadTransactionName) {
-        tr.name = self._config.config.pageLoadTransactionName
+      if (tr.name === 'Unknown' && config.pageLoadTransactionName) {
+        tr.name = config.pageLoadTransactionName
       }
     }
 
@@ -138,8 +149,8 @@ class TransactionService {
         self._logger.debug('TransactionService transaction finished', tr)
         if (!self.shouldIgnoreTransaction(tr.name)) {
           if (type === 'page-load') {
-            if (tr.name === 'Unknown' && self._config.config.pageLoadTransactionName) {
-              tr.name = self._config.config.pageLoadTransactionName
+            if (tr.name === 'Unknown' && config.pageLoadTransactionName) {
+              tr.name = config.pageLoadTransactionName
             }
             var captured = self.capturePageLoadMetrics(tr)
             if (captured) {
