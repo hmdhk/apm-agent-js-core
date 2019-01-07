@@ -5,7 +5,8 @@ const {
   isDtHeaderValid,
   getDtHeaderValue,
   merge,
-  stripQueryStringFromUrl
+  stripQueryStringFromUrl,
+  parseDtHeaderValue
 } = require('../common/utils')
 const patchingSub = require('../common/patching').subscription
 const { globalState } = require('../common/patching/patch-utils')
@@ -39,6 +40,7 @@ class PerformanceMonitoring {
   getXhrPatchSubFn () {
     var configService = this._configService
     var transactionService = this._transactionService
+    var pm = this
     return function (event, task) {
       if (
         (task.source === XMLHTTPREQUEST_SOURCE && !globalState.fetchInProgress) ||
@@ -55,21 +57,7 @@ class PerformanceMonitoring {
               checkSameOrigin(task.data.url, origins)
             var target = task.data.target
             if (isDtEnabled && isSameOrigin && target) {
-              var headerName = configService.get('distributedTracingHeaderName')
-              var headerValueCallback = configService.get('distributedTracingHeaderValueCallback')
-              if (typeof headerValueCallback !== 'function') {
-                headerValueCallback = getDtHeaderValue
-              }
-
-              var headerValue = headerValueCallback(span)
-              var isHeaderValid = isDtHeaderValid(headerValue)
-              if (headerName && headerValue && isHeaderValid) {
-                if (typeof target.setRequestHeader === 'function') {
-                  target.setRequestHeader(headerName, headerValue)
-                } else if (target.headers && typeof target.headers.append === 'function') {
-                  target.headers.append(headerName, headerValue)
-                }
-              }
+              pm.injectDtHeader(span, target)
             }
             span.addContext({
               http: {
@@ -89,6 +77,35 @@ class PerformanceMonitoring {
           task.data.span.end()
         }
       }
+    }
+  }
+
+  injectDtHeader (span, target) {
+    var configService = this._configService
+    var headerName = configService.get('distributedTracingHeaderName')
+    var headerValueCallback = configService.get('distributedTracingHeaderValueCallback')
+    if (typeof headerValueCallback !== 'function') {
+      headerValueCallback = getDtHeaderValue
+    }
+
+    var headerValue = headerValueCallback(span)
+    var isHeaderValid = isDtHeaderValid(headerValue)
+    if (headerName && headerValue && isHeaderValid) {
+      if (typeof target.setRequestHeader === 'function') {
+        target.setRequestHeader(headerName, headerValue)
+      } else if (target.headers && typeof target.headers.append === 'function') {
+        target.headers.append(headerName, headerValue)
+      } else {
+        target[headerName] = headerValue
+      }
+    }
+  }
+
+  extractDtHeader (target) {
+    var configService = this._configService
+    var headerName = configService.get('distributedTracingHeaderName')
+    if (target) {
+      return parseDtHeaderValue(target[headerName])
     }
   }
 
