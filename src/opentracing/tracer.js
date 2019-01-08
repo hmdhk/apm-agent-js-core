@@ -1,9 +1,15 @@
-const ot = require('opentracing')
-const Noop = require('opentracing/lib/noop')
+const {
+  Tracer: otTracer,
+  REFERENCE_CHILD_OF,
+  FORMAT_TEXT_MAP,
+  FORMAT_HTTP_HEADERS,
+  FORMAT_BINARY,
+  Span: NoopSpan
+} = require('opentracing')
+const { getTimeOrigin } = require('../common/utils')
 const Span = require('./span')
-const utils = require('../common/utils')
 
-class Tracer extends ot.Tracer {
+class Tracer extends otTracer {
   constructor (performanceMonitoring, transactionService, loggingService, errorLogging) {
     super()
     this.performanceMonitoring = performanceMonitoring
@@ -26,7 +32,7 @@ class Tracer extends ot.Tracer {
         }
 
         var childRef = options.references.find(function (ref) {
-          return ref.type() === ot.REFERENCE_CHILD_OF
+          return ref.type() === REFERENCE_CHILD_OF
         })
         if (childRef) {
           spanOptions.parentId = childRef.referencedContext().id
@@ -42,11 +48,11 @@ class Tracer extends ot.Tracer {
     }
 
     if (!span) {
-      return Noop.span
+      return new NoopSpan()
     }
 
     if (spanOptions.timestamp) {
-      span._start = spanOptions.timestamp - utils.getTimeOrigin()
+      span._start = spanOptions.timestamp - getTimeOrigin()
     }
     var otSpan = new Span(this, span)
     if (options && options.tags) {
@@ -57,11 +63,14 @@ class Tracer extends ot.Tracer {
 
   _inject (spanContext, format, carrier) {
     switch (format) {
-      case ot.FORMAT_TEXT_MAP:
-      case ot.FORMAT_HTTP_HEADERS:
+      case FORMAT_TEXT_MAP:
+      case FORMAT_HTTP_HEADERS:
         this.performanceMonitoring.injectDtHeader(spanContext, carrier)
         break
-      case ot.FORMAT_BINARY:
+      case FORMAT_BINARY:
+        this.loggingService.debug(
+          'Elastic APM OpenTracing: binary carrier format is not supported.'
+        )
         break
     }
   }
@@ -69,11 +78,14 @@ class Tracer extends ot.Tracer {
   _extract (format, carrier) {
     var ctx
     switch (format) {
-      case ot.FORMAT_TEXT_MAP:
-      case ot.FORMAT_HTTP_HEADERS:
+      case FORMAT_TEXT_MAP:
+      case FORMAT_HTTP_HEADERS:
         ctx = this.performanceMonitoring.extractDtHeader(carrier)
         break
-      case ot.FORMAT_BINARY:
+      case FORMAT_BINARY:
+        this.loggingService.debug(
+          'Elastic APM OpenTracing: binary carrier format is not supported.'
+        )
         break
     }
 

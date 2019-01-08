@@ -1,10 +1,10 @@
-const ot = require('opentracing')
-const utils = require('../common/utils')
+const { Span: otSpan } = require('opentracing')
+const { extend, getTimeOrigin } = require('../common/utils')
 
-class Span extends ot.Span {
+class Span extends otSpan {
   constructor (tracer, span) {
     super()
-    this.tracer = tracer
+    this.__tracer = tracer
     this.span = span
     this.spanContext = {
       id: span.id,
@@ -18,7 +18,7 @@ class Span extends ot.Span {
   }
 
   _tracer () {
-    return this.tracer
+    return this.__tracer
   }
 
   _setOperationName (name) {
@@ -26,7 +26,7 @@ class Span extends ot.Span {
   }
 
   _addTags (keyValuePairs) {
-    var tags = utils.extend({}, keyValuePairs)
+    var tags = extend({}, keyValuePairs)
     if (tags.type) {
       this.span.type = tags.type
       delete tags.type
@@ -39,8 +39,8 @@ class Span extends ot.Span {
       this.span.addContext({
         user: {
           id: userId,
-          username: username,
-          email: email
+          username,
+          email
         }
       })
       delete tags['user.id']
@@ -54,9 +54,9 @@ class Span extends ot.Span {
   _log (log, timestamp) {
     if (log.event === 'error') {
       if (log['error.object']) {
-        this.tracer.errorLogging.logError(log['error.object'])
+        this.__tracer.errorLogging.logError(log['error.object'])
       } else if (log.message) {
-        this.tracer.errorLogging.logError(log.message)
+        this.__tracer.errorLogging.logError(log.message)
       }
     }
   }
@@ -64,7 +64,7 @@ class Span extends ot.Span {
   _finish (finishTime) {
     this.span.end()
     if (finishTime) {
-      this.span._end = finishTime - utils.getTimeOrigin()
+      this.span._end = finishTime - getTimeOrigin()
     }
   }
 }
