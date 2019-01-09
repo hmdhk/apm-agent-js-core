@@ -1,11 +1,13 @@
 const { Span: otSpan } = require('opentracing')
 const { extend, getTimeOrigin } = require('../common/utils')
+const Transaction = require('../performance-monitoring/transaction')
 
 class Span extends otSpan {
   constructor (tracer, span) {
     super()
     this.__tracer = tracer
     this.span = span
+    this.isTransaction = span instanceof Transaction
     this.spanContext = {
       id: span.id,
       traceId: span.traceId,
@@ -32,20 +34,22 @@ class Span extends otSpan {
       delete tags.type
     }
 
-    const userId = tags['user.id']
-    const username = tags['user.username']
-    const email = tags['user.email']
-    if (userId || username || email) {
-      this.span.addContext({
-        user: {
-          id: userId,
-          username,
-          email
-        }
-      })
-      delete tags['user.id']
-      delete tags['user.username']
-      delete tags['user.email']
+    if (this.isTransaction) {
+      const userId = tags['user.id']
+      const username = tags['user.username']
+      const email = tags['user.email']
+      if (userId || username || email) {
+        this.span.addContext({
+          user: {
+            id: userId,
+            username,
+            email
+          }
+        })
+        delete tags['user.id']
+        delete tags['user.username']
+        delete tags['user.email']
+      }
     }
 
     this.span.addTags(tags)

@@ -41,7 +41,9 @@ class Tracer extends otTracer {
     }
 
     var span
-    if (this.transactionService.getCurrentTransaction()) {
+    var currentTransaction = this.transactionService.getCurrentTransaction()
+
+    if (currentTransaction && !currentTransaction.ended) {
       span = this.transactionService.startSpan(name, undefined, spanOptions)
     } else {
       span = this.transactionService.startTransaction(name, undefined, spanOptions)

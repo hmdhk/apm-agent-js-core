@@ -1,6 +1,8 @@
 const apiCompatibilityChecks = require('./api_compatibility').default
+const { createServiceFactory } = require('..')
 const ElasticTracer = require('../../src/opentracing/tracer')
-const createServiceFactory = require('..').createServiceFactory
+const Transaction = require('../../src/performance-monitoring/transaction')
+const Span = require('../../src/performance-monitoring/span')
 
 function createTracer (config) {
   var serviceFactory = createServiceFactory()
@@ -38,6 +40,7 @@ describe('OpenTracing API', function () {
     })
     var span = tracer.startSpan('test-name', { tags: { type: 'test-type' }, startTime: Date.now() })
 
+    expect(span.span instanceof Transaction).toBe(true)
     expect(span.span.name).toBe('test-name')
     expect(span.span.type).toBe('test-type')
     expect(span.tracer()).toBe(tracer)
@@ -70,5 +73,29 @@ describe('OpenTracing API', function () {
     tracer.errorLogging.logError.calls.reset()
     span.log({ event: 'error', message: 'OpenTracing error test message' })
     expect(tracer.errorLogging.logError).toHaveBeenCalledWith('OpenTracing error test message')
+
+    var childSpan = tracer.startSpan('span-name', {
+      tags: { type: 'span-type' },
+      childOf: span.context()
+    })
+
+    expect(childSpan.span instanceof Span).toBe(true)
+    childSpan.addTags({
+      'user.id': 'test-id',
+      'user.username': 'test-username',
+      'user.email': 'test-email',
+      'another.tag': 'test-tag',
+      type: 'new-type'
+    })
+
+    expect(childSpan.span.type).toBe('new-type')
+    expect(childSpan.span.context).toEqual({
+      tags: {
+        another_tag: 'test-tag',
+        user_id: 'test-id',
+        user_username: 'test-username',
+        user_email: 'test-email'
+      }
+    })
   })
 })
