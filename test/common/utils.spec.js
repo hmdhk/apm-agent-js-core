@@ -331,4 +331,18 @@ describe('lib/utils', function () {
       expect(utils.stripQueryStringFromUrl(url)).toEqual(results[index])
     })
   })
+
+  it('should find', function () {
+    var result = utils.find([1, 2, 3, 4, 5], function (n) {
+      return n > 3
+    })
+    expect(result).toBe(4)
+
+    expect(function () {
+      utils.find()
+    }).toThrow()
+
+    result = utils.find(2, function () {})
+    expect(result).toBe(undefined)
+  })
 })

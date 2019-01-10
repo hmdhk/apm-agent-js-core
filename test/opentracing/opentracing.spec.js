@@ -3,6 +3,7 @@ const { createServiceFactory } = require('..')
 const ElasticTracer = require('../../src/opentracing/tracer')
 const Transaction = require('../../src/performance-monitoring/transaction')
 const Span = require('../../src/performance-monitoring/span')
+const { Reference, REFERENCE_CHILD_OF } = require('opentracing')
 
 function createTracer (config) {
   var serviceFactory = createServiceFactory()
@@ -97,5 +98,12 @@ describe('OpenTracing API', function () {
         user_email: 'test-email'
       }
     })
+
+    var SecondChildSpan = tracer.startSpan('span-name', {
+      tags: { type: 'span-type' },
+      references: [new Reference(REFERENCE_CHILD_OF, childSpan)]
+    })
+
+    expect(SecondChildSpan.span.parentId).toBe(childSpan.span.id)
   })
 })

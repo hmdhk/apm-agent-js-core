@@ -301,6 +301,32 @@ function getCurrentScript () {
   }
 }
 
+function find (array, predicate, thisArg) {
+  // Source: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+  if (array == null) {
+    throw new TypeError('array is null or not defined')
+  }
+
+  var o = Object(array)
+  var len = o.length >>> 0
+
+  if (typeof predicate !== 'function') {
+    throw new TypeError('predicate must be a function')
+  }
+
+  var k = 0
+
+  while (k < len) {
+    var kValue = o[k]
+    if (predicate.call(thisArg, kValue, k, o)) {
+      return kValue
+    }
+    k++
+  }
+
+  return undefined
+}
+
 module.exports = {
   extend: function extend (dst) {
     return baseExtend(dst, slice.call(arguments, 1), false)
@@ -422,5 +448,6 @@ module.exports = {
   sanitizeString,
   sanitizeObjectStrings,
   setTag,
-  stripQueryStringFromUrl
+  stripQueryStringFromUrl,
+  find
 }
