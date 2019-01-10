@@ -1,4 +1,4 @@
-const { Span: otSpan } = require('opentracing')
+const { Span: otSpan } = require('opentracing/lib/span')
 const { extend, getTimeOrigin } = require('../common/utils')
 const Transaction = require('../performance-monitoring/transaction')
 

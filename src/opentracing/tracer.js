@@ -1,12 +1,13 @@
+const { Tracer: otTracer } = require('opentracing/lib/tracer')
 const {
-  Tracer: otTracer,
   REFERENCE_CHILD_OF,
   FORMAT_TEXT_MAP,
   FORMAT_HTTP_HEADERS,
-  FORMAT_BINARY,
-  Span: NoopSpan
-} = require('opentracing')
-const { getTimeOrigin } = require('../common/utils')
+  FORMAT_BINARY
+} = require('opentracing/lib/constants')
+const { Span: NoopSpan } = require('opentracing/lib/span')
+
+const { getTimeOrigin, find } = require('../common/utils')
 const Span = require('./span')
 
 class Tracer extends otTracer {
