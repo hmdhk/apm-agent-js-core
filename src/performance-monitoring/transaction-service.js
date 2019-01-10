@@ -149,8 +149,8 @@ class TransactionService {
         self._logger.debug('TransactionService transaction finished', tr)
         if (!self.shouldIgnoreTransaction(tr.name)) {
           if (type === 'page-load') {
-            if (tr.name === 'Unknown' && config.pageLoadTransactionName) {
-              tr.name = config.pageLoadTransactionName
+            if (tr.name === 'Unknown' && self._config.get('pageLoadTransactionName')) {
+              tr.name = self._config.get('pageLoadTransactionName')
             }
             var captured = self.capturePageLoadMetrics(tr)
             if (captured) {
