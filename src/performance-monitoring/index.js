@@ -14,13 +14,11 @@ module.exports = {
       var configService = serviceFactory.getService('ConfigService')
       var loggingService = serviceFactory.getService('LoggingService')
       var apmService = serviceFactory.getService('ApmServer')
-      var zoneService
       var transactionService = serviceFactory.getService('TransactionService')
       return new PerformanceMonitoring(
         apmService,
         configService,
         loggingService,
-        zoneService,
         transactionService
       )
     })

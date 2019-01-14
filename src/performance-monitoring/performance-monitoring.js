@@ -12,18 +12,14 @@ const { globalState } = require('../common/patching/patch-utils')
 const { SCHEDULE, INVOKE, XMLHTTPREQUEST_SOURCE, FETCH_SOURCE } = require('../common/constants')
 
 class PerformanceMonitoring {
-  constructor (apmServer, configService, loggingService, zoneService, transactionService) {
+  constructor (apmServer, configService, loggingService, transactionService) {
     this._apmServer = apmServer
     this._configService = configService
     this._logginService = loggingService
-    this._zoneService = zoneService
     this._transactionService = transactionService
   }
 
   init () {
-    if (this._zoneService) {
-      this._zoneService.initialize(window.Zone.current)
-    }
     var performanceMonitoring = this
     this._transactionService.subscribe(function (tr) {
       var payload = performanceMonitoring.createTransactionPayload(tr)

@@ -58,7 +58,6 @@ class Config {
       checkBrowserResponsiveness: true,
       groupSimilarSpans: true,
       similarSpanThreshold: 0.05,
-      includeXHRQueryString: false,
       capturePageLoad: true,
       ignoreTransactions: [],
       // throttlingRequestLimit: 20,

@@ -205,30 +205,27 @@ describe('PerformanceMonitoring', function () {
   })
 
   xit('should initialize', function (done) {
-    var zoneService = serviceFactory.getService('ZoneService')
     performanceMonitoring.init()
     spyOn(apmServer, 'addTransaction').and.callThrough()
 
-    zoneService.runInApmZone(function () {
-      var tr = performanceMonitoring._transactionService.startTransaction(
-        'transaction',
-        'transaction'
+    var tr = performanceMonitoring._transactionService.startTransaction(
+      'transaction',
+      'transaction'
+    )
+    var span = tr.startSpan('test span', 'test span type')
+    span.end()
+    span = tr.startSpan('test span 2', 'test span type')
+    span.end()
+    tr.detectFinish()
+    setTimeout(() => {
+      expect(apmServer.addTransaction).toHaveBeenCalledWith(
+        jasmine.objectContaining({
+          name: 'transaction',
+          type: 'transaction'
+        })
       )
-      var span = tr.startSpan('test span', 'test span type')
-      span.end()
-      span = tr.startSpan('test span 2', 'test span type')
-      span.end()
-      tr.detectFinish()
-      setTimeout(() => {
-        expect(apmServer.addTransaction).toHaveBeenCalledWith(
-          jasmine.objectContaining({
-            name: 'transaction',
-            type: 'transaction'
-          })
-        )
-        done()
-      }, 10)
-    })
+      done()
+    }, 10)
   })
 
   it('should create correct payload', function () {
