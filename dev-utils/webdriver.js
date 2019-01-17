@@ -1,10 +1,10 @@
 var logLevels = {
-  ALL: {value: Number.MIN_VALUE},
-  DEBUG: {value: 700},
-  INFO: {value: 800},
-  WARNING: {value: 900},
-  SEVERE: {value: 1000},
-  OFF: {value: Number.MAX_VALUE}
+  ALL: { value: Number.MIN_VALUE },
+  DEBUG: { value: 700 },
+  INFO: { value: 800 },
+  WARNING: { value: 900 },
+  SEVERE: { value: 1000 },
+  OFF: { value: Number.MAX_VALUE }
 }
 
 var debugMode = false
@@ -42,8 +42,7 @@ function assertNoBrowserErrors (whitelist) {
     if (failureEntries.length > 0) {
       reject(
         new Error(
-          'Expected no errors in the browserLog but got ' +
-            failureEntries.length + ' error(s)'
+          'Expected no errors in the browserLog but got ' + failureEntries.length + ' error(s)'
         )
       )
     } else {
@@ -70,20 +69,18 @@ function isLogEntryATestFailure (entry, whitelist) {
 module.exports = {
   allowSomeBrowserErrors: function allowSomeBrowserErrors (whitelist, done) {
     if (typeof done === 'function') {
-      assertNoBrowserErrors(whitelist)
-        .then(() => {
-          done()
-        })
+      assertNoBrowserErrors(whitelist).then(() => {
+        done()
+      })
     } else {
       return assertNoBrowserErrors(whitelist)
     }
   },
   verifyNoBrowserErrors: function verifyNoBrowserErrors (done) {
     if (typeof done === 'function') {
-      assertNoBrowserErrors([])
-        .then(() => {
-          done()
-        })
+      assertNoBrowserErrors([]).then(() => {
+        done()
+      })
     } else {
       return assertNoBrowserErrors([])
     }
@@ -94,7 +91,7 @@ module.exports = {
       if (error.message.indexOf('received Inspector.detached event') === -1) {
         done.fail(error)
       }
-    // done()
+      // done()
     }
   }
 }

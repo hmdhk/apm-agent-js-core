@@ -28,4 +28,5 @@ function launchSauceConnect (userConfig, done) {
   tryConnect(3, 1, done)
 }
 module.exports = {
-  launchSauceConnect}
+  launchSauceConnect
+}

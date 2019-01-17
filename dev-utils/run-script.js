@@ -1,7 +1,7 @@
-
-var path = require('path')
-var testUtils = require('./test')
-var saucelabs = require('./saucelabs')
+const path = require('path')
+const testUtils = require('./test')
+const saucelabs = require('./saucelabs')
+const { generateNotice } = require('./dep-info')
 
 function runUnitTests (launchSauceConnect) {
   var testConfig = testUtils.getTestEnvironmentVariables()
@@ -15,7 +15,7 @@ function runUnitTests (launchSauceConnect) {
 
 function runScript (scripts, scriptName, scriptArgs) {
   if (scriptName) {
-    var message = `Running: ${scriptName}(${scriptArgs.map(a => '\'' + a + '\'').join(', ')}) \n`
+    var message = `Running: ${scriptName}(${scriptArgs.map(a => "'" + a + "'").join(', ')}) \n`
     console.log(message)
     if (typeof scripts[scriptName] === 'function') {
       return scripts[scriptName].apply(this, scriptArgs)
@@ -26,7 +26,8 @@ function runScript (scripts, scriptName, scriptArgs) {
 }
 
 var scripts = {
-  runUnitTests: runUnitTests,
+  runUnitTests,
+  generateNotice,
   launchSauceConnect: function launchSauceConnect () {
     var env = testUtils.getTestEnvironmentVariables()
     saucelabs.launchSauceConnect(env.sauceLabs, function () {
@@ -35,4 +36,4 @@ var scripts = {
   }
 }
 
-runScript(scripts, process.argv[2], ([].concat(process.argv)).slice(3))
+runScript(scripts, process.argv[2], [].concat(process.argv).slice(3))

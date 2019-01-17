@@ -65,28 +65,32 @@ var walkSync = function (dir, filter, filelist) {
 }
 
 function buildE2eBundles (basePath, callback) {
-  var cb = callback || function (err) {
-    if (err) {
-      var exitCode = 2
-      process.exit(exitCode)
+  var cb =
+    callback ||
+    function (err) {
+      if (err) {
+        var exitCode = 2
+        process.exit(exitCode)
+      }
     }
-  }
 
   var webpack = require('webpack')
   var fileList = walkSync(basePath, /webpack\.config\.js$/)
   fileList = fileList.map(function (file) {
     return path.relative(__dirname, file)
   })
-  var configs = fileList.map(f => {
-    return require(f)
-  }).reduce((acc, cfg) => {
-    if (cfg.length) {
-      return acc.concat(cfg)
-    } else {
-      acc.push(cfg)
-      return acc
-    }
-  }, [])
+  var configs = fileList
+    .map(f => {
+      return require(f)
+    })
+    .reduce((acc, cfg) => {
+      if (cfg.length) {
+        return acc.concat(cfg)
+      } else {
+        acc.push(cfg)
+        return acc
+      }
+    }, [])
 
   console.log('Config Files: \n', fileList.join('\n'))
   webpack(configs, (err, stats) => {
@@ -139,32 +143,35 @@ function startSelenium (callback, manualStop) {
       arch: process.arch
     }
   }
-  selenium.install({
-    logger: console.log,
-    drivers: drivers
-  }, function (installError) {
-    if (installError) {
-      console.log('Error while installing selenium:', installError)
-    }
-    selenium.start({drivers: drivers}, function (startError, child) {
-      function killSelenium () {
-        child.kill()
-        console.log('Just killed selenium!')
+  selenium.install(
+    {
+      logger: console.log,
+      drivers: drivers
+    },
+    function (installError) {
+      if (installError) {
+        console.log('Error while installing selenium:', installError)
       }
-      if (startError) {
-        console.log('Error while starting selenium:', startError)
-        return process.exit(1)
-      } else {
-        console.log('Selenium started!')
-        if (manualStop) {
-          callback(killSelenium)
-        } else {
-          onExit(killSelenium)
-          callback()
+      selenium.start({ drivers: drivers }, function (startError, child) {
+        function killSelenium () {
+          child.kill()
+          console.log('Just killed selenium!')
         }
-      }
-    })
-  })
+        if (startError) {
+          console.log('Error while starting selenium:', startError)
+          return process.exit(1)
+        } else {
+          console.log('Selenium started!')
+          if (manualStop) {
+            callback(killSelenium)
+          } else {
+            onExit(killSelenium)
+            callback()
+          }
+        }
+      })
+    }
+  )
 }
 
 function runE2eTests (configFilePath, runSelenium) {
@@ -172,17 +179,19 @@ function runE2eTests (configFilePath, runSelenium) {
   var Launcher = require('webdriverio').Launcher
   var wdio = new Launcher(configFilePath)
   function runWdio () {
-    wdio.run()
-      .then(function (code) {
+    wdio.run().then(
+      function (code) {
         process.stdin.pause()
         process.nextTick(() => process.exit(code))
-      // process.exit(code)
-      }, function (error) {
+        // process.exit(code)
+      },
+      function (error) {
         console.error('Launcher failed to start the test', error)
         process.stdin.pause()
         process.nextTick(() => process.exit())
-      // process.exit(1)
-      })
+        // process.exit(1)
+      }
+    )
   }
   if (runSelenium) {
     startSelenium(runWdio)
