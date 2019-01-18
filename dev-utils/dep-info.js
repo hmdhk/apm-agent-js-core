@@ -33,12 +33,18 @@ function generateDependencyInfo (deps, modulesPath) {
 
 function generateNotice (rootDir) {
   if (!rootDir) rootDir = './'
-  const { dependencies } = JSON.parse(readFileSync(path.join(rootDir, './package.json'), 'utf8'))
+  const { dependencies, name } = JSON.parse(
+    readFileSync(path.join(rootDir, './package.json'), 'utf8')
+  )
   var depInfo = generateDependencyInfo(
     Object.keys(dependencies),
     path.join(rootDir, './node_modules')
   )
-  var allLicenses = ''
+  var allLicenses = `
+${name}
+Copyright (c) 2017-present, Elasticsearch BV
+
+`
   depInfo.forEach(d => {
     if (d.license || d.notice) {
       allLicenses += `

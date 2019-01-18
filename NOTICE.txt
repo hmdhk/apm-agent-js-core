@@ -1,4 +1,8 @@
 
+elastic-apm-js-core
+Copyright (c) 2017-present, Elasticsearch BV
+
+
 ---
 This product relies on error-stack-parser
 
