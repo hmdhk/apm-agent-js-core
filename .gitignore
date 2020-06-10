@@ -1,0 +1,17 @@
+node_modules
+.DS_Store
+aws.json
+
+.vscode
+.idea
+
+dist
+
+npm-debug.log
+
+errorShots
+
+e2e_test/libs
+
+coverage
+tmp
